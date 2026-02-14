@@ -5,50 +5,73 @@ const GAME_DATA = {
     items: {
         "兽皮": { name: "粗糙兽皮", price: 10, desc: "普通的妖兽皮毛" },
         "道韵": { name: "道韵碎片", price: 50, desc: "蕴含法则的碎片" },
-        "ticket_1": { name: "低级挑战券", price: 500, desc: "挑战1-30级首领使用" },
-        "ticket_2": { name: "中级挑战券", price: 5000, desc: "挑战31-70级首领使用" },
-        "ticket_3": { name: "高级挑战券", price: 50000, desc: "挑战71-100级首领使用" }
+        "ticket_1": { name: "低级挑战券", price: 500, desc: "挑战20级首领" },
+        "ticket_2": { name: "中级挑战券", price: 5000, desc: "挑战50级首领" },
+        "ticket_3": { name: "高级挑战券", price: 50000, desc: "挑战90级首领" },
+        "筑基丹": { name: "筑基丹", price: 200, desc: "突破筑基期的灵药" }
     },
 
     equipSlots: { weapon: "武器", head: "头饰", neck: "项链", body: "防具", pants: "裤子", shoes: "鞋子", ornament: "装饰" },
     
-    // 自动生成 1-100 级野外怪物
+    // 自动生成100级怪物，平滑曲线
     fieldMonsters: Array.from({length: 20}, (_, i) => {
         const lv = (i + 1) * 5;
+        const names = ["野兔","灰狼","蛮牛","赤雕","猛虎","妖狐","魔猿","幽蟒","灵鹤","蛟龙"];
+        const name = names[i % 10] + ((i >= 10) ? "王" : "精");
         return {
             level: lv,
-            name: ["野兔","灰狼","蛮牛","赤雕","猛虎","妖狐","魔猿","幽蟒","灵鹤","蛟龙"][i % 10] + "精",
-            hpMult: 1 + i * 1.5,
-            atkMult: 1 + i * 1.2,
-            exp: Math.floor(15 * Math.pow(1.4, i)),
-            money: 10 + i * 20,
-            dropRate: 0.15 // 提高掉落率至 15% 
+            name: name,
+            hpMult: 1 + i * 2,
+            atkMult: 0.5 + i * 0.8,
+            exp: Math.floor(20 * Math.pow(1.3, i)),
+            money: 10 + i * 15,
+            loot: ["兽皮"], // 基础掉落，装备动态生成
+            dropRate: 0.2 // 20% 掉率
         };
     }),
 
-    // 首领配置
     bosses: [
-        { name: "地岩守卫", level: 20, ticket: "ticket_1", hpMult: 50, atkMult: 15, exp: 5000, money: 2000, drops: ["weapon_3", "body_3"] },
-        { name: "嗜血狼王", level: 50, ticket: "ticket_2", hpMult: 500, atkMult: 100, exp: 80000, money: 30000, drops: ["weapon_7", "body_7"] },
-        { name: "九幽冥凤", level: 90, ticket: "ticket_3", hpMult: 5000, atkMult: 1200, exp: 2000000, money: 500000, drops: ["weapon_12", "body_12"] }
+        { name: "地岩守卫", level: 20, ticket: "ticket_1", hpMult: 40, atkMult: 10, exp: 3000, money: 1000, drops: ["weapon_3", "body_3"] },
+        { name: "嗜血狼王", level: 50, ticket: "ticket_2", hpMult: 300, atkMult: 50, exp: 50000, money: 20000, drops: ["weapon_6", "body_6"] },
+        { name: "九幽冥凤", level: 90, ticket: "ticket_3", hpMult: 2000, atkMult: 500, exp: 1000000, money: 300000, drops: ["weapon_10", "body_10"] }
     ],
 
     getEquipStats: (type, tier) => {
-        const base = { weapon:{atk:20}, head:{def:8,hp:100}, neck:{atk:10,hp:200}, body:{def:20,hp:500}, pants:{def:12,hp:200}, shoes:{atk:5,def:5}, ornament:{atk:20} }[type];
+        const base = { weapon:{atk:15}, head:{def:5,hp:80}, neck:{atk:5,hp:150}, body:{def:15,hp:300}, pants:{def:8,hp:150}, shoes:{atk:3,def:3}, ornament:{atk:15} }[type] || {atk:1,def:1,hp:1};
         const mult = Math.pow(1.35, tier - 1);
         return { atk: Math.floor((base.atk||0)*mult), def: Math.floor((base.def||0)*mult), hp: Math.floor((base.hp||0)*mult) };
+    },
+
+    maps: {
+        field: { name: "蛮荒野外", genEnemy: (p, idx) => {
+            const m = GAME_DATA.fieldMonsters[idx || 0];
+            // 动态生成装备掉落：等级越高，掉落装备阶级越高
+            const tier = Math.floor(m.level / 10) + 1;
+            const extraLoot = [];
+            if(Math.random() < 0.5) extraLoot.push(["weapon","body","head"][Math.floor(Math.random()*3)] + "_" + tier);
+            
+            return { 
+                name: m.name, 
+                hp: Math.max(50, Math.floor(p.atk * 3 * m.hpMult)), // 动态血量
+                atk: Math.floor(p.def * 0.8 * m.atkMult), 
+                def: 0, exp: m.exp, money: m.money, 
+                loot: m.loot.concat(extraLoot) 
+            };
+        }},
+        tower: { name: "镇妖塔", genEnemy: (p, f) => {
+            const s = Math.pow(1.15, f);
+            return { name: `第${f}层 塔灵`, hp: Math.floor(300 * s), atk: Math.floor(25 * s), def: Math.floor(10 * s), exp: Math.floor(80 * s), money: Math.floor(40 * s), loot: ["道韵"] };
+        }}
     }
 };
 
-// 境界属性大幅上调
-(function() {
-    let bExp = 200; let sMult = 1;
+(function init() {
+    let bExp = 150; let sMult = 1;
     GAME_DATA.majorRealms.forEach((name, idx) => {
         if (idx === 0) { GAME_DATA.realms.push({ name: "凡人", exp: 200, mult: 1, isMajor: true }); return; }
         for (let i = 1; i <= 10; i++) {
-            bExp = Math.floor(bExp * 1.25 + 300);
-            if (i === 1) sMult *= 2.0; // 大境界跨度翻倍
-            else sMult *= 1.15; // 小境界加成提高
+            bExp = Math.floor(bExp * 1.25 + 200);
+            if (i === 1) sMult *= 1.5; else sMult *= 1.1; // 属性系数
             GAME_DATA.realms.push({ name: `${name}${i === 10 ? '圆满' : i + '层'}`, exp: bExp, mult: parseFloat(sMult.toFixed(2)), isMajor: i === 1 });
         }
     });
