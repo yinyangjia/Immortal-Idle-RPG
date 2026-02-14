@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>万古仙途：无限数值</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="game-container">
+        <header>
+            <h1 id="realm-title">凡人 (战力: 0)</h1>
+            <div class="stats-grid">
+                <div>❤️ 生命: <span id="val-hp">100</span>/<span id="val-max-hp">100</span></div>
+                <div>⚔️ 攻击: <span id="val-atk">10</span></div>
+                <div>🛡️ 防御: <span id="val-def">2</span></div>
+                <div>🏹 破甲: <span id="val-pen">0</span></div>
+                <div class="full-width">✨ 修为: <span id="val-exp">0</span> / <span id="val-max-exp">100</span></div>
+            </div>
+            <button id="btn-breakthrough" onclick="Game.breakthrough()">⚡ 尝试突破瓶颈 ⚡</button>
+        </header>
+
+        <div id="log-container">
+            <div class="log-entry system">欢迎来到修仙界...</div>
+        </div>
+
+        <div id="map-controls">
+            <button class="map-btn active" onclick="Game.switchMap('field')">🌲 野外挂机</button>
+            <button class="map-btn" onclick="Game.switchMap('boss')">👹 挑战首领</button>
+            <button class="map-btn" onclick="Game.switchMap('tower')">🗼 镇妖塔 (层数:<span id="tower-floor">1</span>)</button>
+        </div>
+        
+        <div id="enemy-panel">
+            正在与 <span id="enemy-name" style="color:red">虚空</span> 交战...
+            <div class="hp-bar"><div id="enemy-hp-bar" style="width: 100%;"></div></div>
+        </div>
+    </div>
+
+    <script src="js/logger.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/battle.js"></script>
+    <script src="js/engine.js"></script>
+</body>
+</html>
