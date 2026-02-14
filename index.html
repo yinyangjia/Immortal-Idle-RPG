@@ -10,6 +10,10 @@
 
     <div id="game-container">
         <header>
+            <div id="top-bar" style="margin-bottom: 10px; display: flex; gap: 10px;">
+    <button id="btn-bag" onclick="Game.toggleBag()">🎒 打开储物袋</button>
+    <div style="flex:1; text-align:right; color:#ffd700;">灵石: <span id="val-money">0</span></div>
+</div>
             <h1 id="realm-title">凡人 (战力: 0)</h1>
             <div class="stats-grid">
                 <div>❤️ 生命: <span id="val-hp">100</span>/<span id="val-max-hp">100</span></div>
@@ -41,5 +45,17 @@
     <script src="js/data.js"></script>
     <script src="js/battle.js"></script>
     <script src="js/engine.js"></script>
+    <div id="monster-selector" class="modal hidden">
+    <h3>选择历练对象</h3>
+    <div id="monster-list" class="grid-list"></div>
+    <button onclick="document.getElementById('monster-selector').classList.add('hidden')">关闭</button>
+</div>
+
+<div id="bag-panel" class="modal hidden">
+    <h3>🎒 储物袋</h3>
+    <p>当前灵石: <span id="bag-money">0</span></p>
+    <div id="inventory-grid" class="grid-list"></div>
+    <button onclick="Game.toggleBag()">关闭</button>
+</div>
 </body>
 </html>
