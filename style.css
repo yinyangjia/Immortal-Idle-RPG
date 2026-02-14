@@ -1,35 +1,27 @@
+/* ... (保留之前的基础样式) ... */
 :root {
     --bg-color: #121212; --panel-bg: #1e1e1e;
     --accent-gold: #ffd700; --danger-red: #ff5252; --success-green: #69f0ae;
-    --rare-blue: #40c4ff; --epic-purple: #b388ff; --legend-orange: #ffab40;
-    --text-main: #e0e0e0;
+    --rare-blue: #40c4ff; --epic-purple: #b388ff; --text-main: #e0e0e0;
 }
 body { background: var(--bg-color); color: var(--text-main); font-family: sans-serif; margin: 0; padding: 10px; display: flex; justify-content: center; }
-#game-container { width: 100%; max-width: 480px; background: var(--panel-bg); border: 1px solid #333; border-radius: 8px; padding: 15px; box-shadow: 0 0 15px rgba(0,0,0,0.5); position: relative; }
+#game-container { width: 100%; max-width: 480px; background: var(--panel-bg); border: 1px solid #333; border-radius: 8px; padding: 15px; position: relative; }
 button { cursor: pointer; border-radius: 4px; }
 
-/* 顶部与属性 */
-#top-bar { display: flex; justify-content: space-between; margin-bottom: 10px; }
+/* 顶部栏 */
+#top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 #top-bar button { background: #333; color: white; border: 1px solid #555; padding: 5px 10px; }
-.currency { color: var(--accent-gold); font-weight: bold; }
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #252525; padding: 10px; border-radius: 5px; font-size: 0.9em; }
-.full-width { grid-column: span 2; color: var(--accent-gold); text-align: center; }
-#btn-breakthrough { width: 100%; padding: 10px; background: var(--accent-gold); border: none; font-weight: bold; margin-top: 5px; }
+.currency { font-size: 0.9em; }
 
-/* 战斗日志 */
+/* 日志 */
 #log-container { height: 150px; background: #000; border: 1px solid #444; padding: 8px; overflow-y: auto; font-family: monospace; font-size: 0.85em; margin: 10px 0; display: flex; flex-direction: column-reverse; }
 .log-entry { border-bottom: 1px dashed #222; margin-bottom: 2px; }
-.log-win { color: var(--success-green); } .log-lose { color: var(--danger-red); }
+.log-win { color: var(--success-green); } .log-lose { color: var(--danger-red); } .log-skill { color: var(--rare-blue); font-weight: bold; }
 
-/* 地图按钮 */
+/* 按钮与网格 */
 #map-controls { display: flex; flex-wrap: wrap; gap: 5px; }
-.map-btn { flex: 1 1 45%; padding: 10px; background: #333; color: #aaa; border: 1px solid #444; }
+.map-btn { flex: 1 1 30%; padding: 8px; background: #333; color: #aaa; border: 1px solid #444; }
 .map-btn.active { background: var(--accent-gold); color: #000; font-weight: bold; }
-
-/* 敌人血条 */
-#enemy-panel { margin-top: 10px; padding: 10px; background: #2a2a2a; border-radius: 5px; }
-.hp-bar { height: 6px; background: #333; margin-top: 5px; }
-#enemy-hp-bar { height: 100%; background: var(--danger-red); transition: width 0.2s; }
 
 /* 弹窗 */
 .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 450px; background: #1a1a1a; border: 2px solid var(--accent-gold); padding: 15px; z-index: 100; border-radius: 8px; color: #fff; max-height: 85vh; display: flex; flex-direction: column; }
@@ -44,23 +36,14 @@ button { cursor: pointer; border-radius: 4px; }
 .slot { background: #222; border: 1px solid #444; padding: 8px; text-align: center; font-size: 0.8em; }
 .slot.equipped { border-color: var(--rare-blue); color: var(--rare-blue); }
 
-#inventory-grid, #monster-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; overflow-y: auto; padding-right: 5px; }
-#monster-list { grid-template-columns: 1fr; } /* 怪物列表单列 */
+#inventory-grid, #monster-list, .grid-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; overflow-y: auto; padding-right: 5px; }
+#monster-list { grid-template-columns: 1fr; }
 
-.item-card, .monster-card { background: #2a2a2a; border: 1px solid #444; padding: 8px; font-size: 0.85em; text-align: center; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between; }
-.monster-card { flex-direction: row; text-align: left; cursor: pointer; }
-.monster-card:hover { border-color: var(--accent-gold); background: #333; }
+.item-card, .monster-card { background: #2a2a2a; border: 1px solid #444; padding: 8px; font-size: 0.85em; text-align: center; border-radius: 4px; }
+.monster-card { display: flex; justify-content: space-between; align-items: center; text-align: left; }
+.skill-tag { background: #0d47a1; padding: 2px 5px; border-radius: 3px; font-size: 0.8em; }
 
-/* 品质颜色 */
-.tier-1 { border-top: 2px solid #fff; } .tier-2 { border-top: 2px solid var(--success-green); }
-.tier-3 { border-top: 2px solid var(--rare-blue); } .tier-4 { border-top: 2px solid var(--epic-purple); }
-.tier-5 { border-top: 2px solid var(--legend-orange); } .tier-10 { border-top: 2px solid var(--danger-red); }
-
+/* 按钮组 */
 .btn-group { display: flex; gap: 4px; margin-top: 5px; }
 .item-btn { flex: 1; border: none; padding: 4px; color: white; background: #444; font-size: 0.8em; }
-.btn-sell { background: #5c3b3b; } .btn-buy { background: #2e7d32; width: 100%; margin-top: 5px; }
-
-@media (max-width: 600px) {
-    .panel-content { flex-direction: column; }
-    .equip-section { flex: none; display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #444; padding-bottom: 10px; }
-}
+.btn-sell { background: #5c3b3b; } .btn-buy { background: #2e7d32; }
