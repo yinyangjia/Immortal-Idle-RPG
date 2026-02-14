@@ -9,7 +9,7 @@
 <body>
     <div id="game-container">
         <div id="top-bar">
-            <button id="btn-bag" onclick="Game.toggleCharacterPanel()">👤 角色与装备</button>
+            <button onclick="Game.toggleCharacterPanel()">👤 角色与背包</button>
             <div class="currency">灵石: <span id="val-money">0</span></div>
         </div>
 
@@ -24,17 +24,20 @@
             <button id="btn-breakthrough" onclick="Game.breakthrough()">⚡ 突破瓶颈 ⚡</button>
         </header>
 
-        <div id="log-container"></div>
+        <div id="log-container">
+            <div class="log-entry system">欢迎回到修仙界...</div>
+        </div>
 
         <div id="map-controls">
-            <button class="map-btn active" onclick="Game.switchMap('field')">🌲 野外</button>
-            <button class="map-btn" onclick="Game.switchMap('boss')">👹 首领</button>
-            <button class="map-btn" onclick="Game.switchMap('tower')">🗼 镇妖塔 (<span id="tower-floor">1</span>)</button>
+            <button class="map-btn active" onclick="Game.switchMap('field')">🌲 野外挂机</button>
+            <button class="map-btn" onclick="Game.switchMap('boss')">👹 挑战首领</button>
+            <button class="map-btn" onclick="Game.switchMap('tower')">🗼 镇妖塔 (<span id="tower-floor">1</span>层)</button>
+            <button class="map-btn" onclick="Game.switchMap('shop')" style="color:var(--accent-gold); border-color:var(--accent-gold)">💰 万宝阁</button>
         </div>
         
         <div id="enemy-panel">
-            VS <span id="enemy-name" style="color:#ff5252">虚空</span>
-            <div class="hp-bar"><div id="enemy-hp-bar"></div></div>
+            VS <span id="enemy-name" style="color: #ff5252;">虚空</span>
+            <div class="hp-bar"><div id="enemy-hp-bar" style="width: 100%;"></div></div>
         </div>
     </div>
 
@@ -43,49 +46,37 @@
             <h2>道友法身</h2>
             <button onclick="Game.toggleCharacterPanel()">关闭</button>
         </div>
-        
         <div class="panel-content">
             <div class="equip-section">
                 <h3>已穿戴装备</h3>
-                <div class="equip-grid">
-                    <div class="slot" id="slot-head" onclick="Game.unequip('head')">头饰: 空</div>
-                    <div class="slot" id="slot-neck" onclick="Game.unequip('neck')">项链: 空</div>
-                    <div class="slot" id="slot-weapon" onclick="Game.unequip('weapon')">武器: 空</div>
-                    <div class="slot" id="slot-body" onclick="Game.unequip('body')">防具: 空</div>
-                    <div class="slot" id="slot-pants" onclick="Game.unequip('pants')">裤子: 空</div>
-                    <div class="slot" id="slot-shoes" onclick="Game.unequip('shoes')">鞋子: 空</div>
-                    <div class="slot" id="slot-ornament" onclick="Game.unequip('ornament')">装饰: 空</div>
-                </div>
-                <div class="detail-stats">
-                    <p>总攻击: <span id="detail-atk">0</span></p>
-                    <p>总防御: <span id="detail-def">0</span></p>
-                    <p>总生命: <span id="detail-hp">0</span></p>
+                <div id="slot-weapon" class="slot" onclick="Game.unequip('weapon')">武器: 空</div>
+                <div id="slot-head" class="slot" onclick="Game.unequip('head')">头饰: 空</div>
+                <div id="slot-neck" class="slot" onclick="Game.unequip('neck')">项链: 空</div>
+                <div id="slot-body" class="slot" onclick="Game.unequip('body')">防具: 空</div>
+                <div id="slot-pants" class="slot" onclick="Game.unequip('pants')">裤子: 空</div>
+                <div id="slot-shoes" class="slot" onclick="Game.unequip('shoes')">鞋子: 空</div>
+                <div id="slot-ornament" class="slot" onclick="Game.unequip('ornament')">装饰: 空</div>
+                <div class="detail-stats" style="margin-top:10px; font-size:0.9em; color:#aaa">
+                    总攻:<span id="detail-atk">0</span> 总防:<span id="detail-def">0</span> 总血:<span id="detail-hp">0</span>
                 </div>
             </div>
-
             <div class="bag-section">
-                <div class="bag-header">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
                     <h3>储物袋</h3>
-                    <button class="btn-synth" onclick="Game.synthesizeAll()">🔥 一键合成 (3合1)</button>
+                    <button onclick="Game.synthesizeAll()" style="background:var(--accent-gold); color:black; border:none; font-weight:bold;">🔥 一键合成</button>
                 </div>
-                <div id="inventory-grid" class="grid-list compact">
-                    </div>
-                <div class="skills-section">
-                    <h3>技能与被动 (修炼中...)</h3>
-                    <div class="skill-placeholder">暂无功法</div>
-                </div>
+                <div id="inventory-grid"></div>
             </div>
         </div>
     </div>
 
     <div id="monster-selector" class="modal hidden">
-        <h3>选择历练对象</h3>
-        <div id="monster-list" class="grid-list"></div>
-        <button onclick="document.getElementById('monster-selector').classList.add('hidden')" style="width:100%">关闭</button>
+        <h3 id="selector-title">选择列表</h3>
+        <div id="monster-list"></div>
+        <button onclick="document.getElementById('monster-selector').classList.add('hidden')" style="width:100%; padding:10px; margin-top:10px;">关闭</button>
     </div>
 
-    <script src="js/logger.js"></script>
-    <script src="js/data.js"></script>
+    <script src="js/logger.js"></script> <script src="js/data.js"></script>
     <script src="js/battle.js"></script>
     <script src="js/engine.js"></script>
 </body>
