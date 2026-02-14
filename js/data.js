@@ -12,7 +12,7 @@ const GAME_DATA = {
         "exp_fruit_1": { name: "灵元果", price: 1000, desc: "服用增加 500 点修为", effect: {type:"exp", val:500} },
         "exp_fruit_2": { name: "天灵根", price: 10000, desc: "服用增加 5000 点修为", effect: {type:"exp", val:5000} },
         
-        // 功法
+        // 功法书
         "book_fire": { name: "烈火剑法", price: 1000, desc: "攻击有20%几率造成200%伤害", type: "book", skillId: "skill_fire" },
         "book_ice":  { name: "寒冰诀", price: 2000, desc: "攻击有10%几率造成300%伤害", type: "book", skillId: "skill_ice" },
         "book_life": { name: "青木长生功", price: 3000, desc: "每回合恢复 5% 最大生命值", type: "book", skillId: "skill_life" }
@@ -24,7 +24,7 @@ const GAME_DATA = {
         "skill_life": { name: "💚回春", type: "heal", rate: 1.0, healMult: 0.05 }
     },
 
-    // --- 门派系统 (扩充至10级，增加属性) ---
+    // --- 门派系统 (10级身份 + 属性加成) ---
     sects: [
         { 
             id: 0, name: "青云门", reqRealm: 1, 
@@ -78,8 +78,8 @@ const GAME_DATA = {
             hpMult: 1 + i * 2, atkMult: 0.5 + i * 0.8,
             exp: Math.floor(20 * Math.pow(1.3, i)),
             money: 10 + i * 15,
-            reputation: 5 + Math.floor(i * 2), // 名望提升
-            loot: ["兽皮"] 
+            reputation: 5 + Math.floor(i * 2), // 名望
+            loot: ["兽皮"] // 基础掉落
         };
     }),
 
