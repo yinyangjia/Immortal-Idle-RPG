@@ -35,7 +35,7 @@ const Battle = {
         let currentEnemyHp = enemy.hp;
         let maxEnemyHp = enemy.hp;
 
-        // 初始刷新
+        // 初始 UI 更新
         if(window.Game) Game.updateUI();
 
         this.intervalId = setInterval(() => {
@@ -54,7 +54,7 @@ const Battle = {
             let eDmg = this.calcDmg(enemy, player, null, null);
             player.hp -= eDmg;
             
-            // 核心修复：强制每回合刷新玩家血量
+            // 核心：每回合强制更新 UI，防止血条卡死
             if(window.Game) Game.updateUI();
 
             if (player.hp <= 0) {
