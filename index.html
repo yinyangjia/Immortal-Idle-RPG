@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>万古仙途：无限数值</title>
+    <title>万古仙途：宗门崛起</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="game-container">
         <div id="top-bar">
-            <button onclick="Game.toggleCharacterPanel()">👤 角色与背包</button>
-            <div class="currency">灵石: <span id="val-money">0</span></div>
+            <button onclick="Game.toggleCharacterPanel()">👤 角色</button>
+            <div class="currency">灵石: <span id="val-money">0</span> | 名望: <span id="val-rep">0</span></div>
         </div>
 
         <header>
@@ -24,59 +24,60 @@
             <button id="btn-breakthrough" onclick="Game.breakthrough()">⚡ 突破瓶颈 ⚡</button>
         </header>
 
-        <div id="log-container">
-            <div class="log-entry system">欢迎回到修仙界...</div>
-        </div>
+        <div id="log-container"><div class="log-entry system">修仙之路漫漫...</div></div>
 
         <div id="map-controls">
-            <button class="map-btn active" onclick="Game.switchMap('field')">🌲 野外挂机</button>
-            <button class="map-btn" onclick="Game.switchMap('boss')">👹 挑战首领</button>
-            <button class="map-btn" onclick="Game.switchMap('tower')">🗼 镇妖塔 (<span id="tower-floor">1</span>层)</button>
-            <button class="map-btn" onclick="Game.switchMap('shop')" style="color:var(--accent-gold); border-color:var(--accent-gold)">💰 万宝阁</button>
+            <button class="map-btn active" onclick="Game.switchMap('field')">野外</button>
+            <button class="map-btn" onclick="Game.switchMap('boss')">首领</button>
+            <button class="map-btn" onclick="Game.switchMap('tower')">镇妖塔</button>
+            <button class="map-btn" onclick="Game.switchMap('sect')" style="color:var(--rare-blue)">门派</button>
+            <button class="map-btn" onclick="Game.switchMap('shop')" style="color:var(--accent-gold)">商城</button>
         </div>
         
         <div id="enemy-panel">
-            VS <span id="enemy-name" style="color: #ff5252;">虚空</span>
-            <div class="hp-bar"><div id="enemy-hp-bar" style="width: 100%;"></div></div>
+            VS <span id="enemy-name" style="color:#ff5252">虚空</span>
+            <div class="hp-bar"><div id="enemy-hp-bar"></div></div>
         </div>
     </div>
 
     <div id="character-panel" class="modal hidden full-screen">
-        <div class="panel-header">
-            <h2>道友法身</h2>
-            <button onclick="Game.toggleCharacterPanel()">关闭</button>
-        </div>
+        <div class="panel-header"><h2>道友法身</h2><button onclick="Game.toggleCharacterPanel()">关闭</button></div>
         <div class="panel-content">
             <div class="equip-section">
-                <h3>已穿戴装备</h3>
+                <h3>装备 & 功法</h3>
                 <div id="slot-weapon" class="slot" onclick="Game.unequip('weapon')">武器: 空</div>
                 <div id="slot-head" class="slot" onclick="Game.unequip('head')">头饰: 空</div>
-                <div id="slot-neck" class="slot" onclick="Game.unequip('neck')">项链: 空</div>
                 <div id="slot-body" class="slot" onclick="Game.unequip('body')">防具: 空</div>
+                <div id="slot-neck" class="slot" onclick="Game.unequip('neck')">项链: 空</div>
                 <div id="slot-pants" class="slot" onclick="Game.unequip('pants')">裤子: 空</div>
                 <div id="slot-shoes" class="slot" onclick="Game.unequip('shoes')">鞋子: 空</div>
                 <div id="slot-ornament" class="slot" onclick="Game.unequip('ornament')">装饰: 空</div>
-                <div class="detail-stats" style="margin-top:10px; font-size:0.9em; color:#aaa">
-                    总攻:<span id="detail-atk">0</span> 总防:<span id="detail-def">0</span> 总血:<span id="detail-hp">0</span>
+                
+                <div style="margin-top:10px;border-top:1px solid #444;padding-top:5px">
+                    <div style="font-size:0.9em;color:var(--rare-blue)">已修习功法:</div>
+                    <div id="skill-list-display" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;"></div>
                 </div>
             </div>
             <div class="bag-section">
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                    <h3>储物袋</h3>
-                    <button onclick="Game.synthesizeAll()" style="background:var(--accent-gold); color:black; border:none; font-weight:bold;">🔥 一键合成</button>
-                </div>
+                <div style="display:flex;justify-content:space-between"><h3>储物袋</h3><button onclick="Game.synthesizeAll()" style="background:var(--accent-gold);color:black;border:none">一键合成</button></div>
                 <div id="inventory-grid"></div>
             </div>
         </div>
     </div>
 
-    <div id="monster-selector" class="modal hidden">
-        <h3 id="selector-title">选择列表</h3>
-        <div id="monster-list"></div>
-        <button onclick="document.getElementById('monster-selector').classList.add('hidden')" style="width:100%; padding:10px; margin-top:10px;">关闭</button>
+    <div id="sect-panel" class="modal hidden">
+        <div class="panel-header"><h2>宗门大殿</h2><button onclick="document.getElementById('sect-panel').classList.add('hidden')">离开</button></div>
+        <div id="sect-info" style="margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px;"></div>
+        <div id="sect-shop"></div>
     </div>
 
-    <script src="js/logger.js"></script> <script src="js/data.js"></script>
+    <div id="monster-selector" class="modal hidden">
+        <h3 id="selector-title">列表</h3>
+        <div id="monster-list"></div>
+        <button onclick="document.getElementById('monster-selector').classList.add('hidden')" style="width:100%;margin-top:10px">关闭</button>
+    </div>
+
+    <script src="js/data.js"></script>
     <script src="js/battle.js"></script>
     <script src="js/engine.js"></script>
 </body>
