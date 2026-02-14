@@ -7,14 +7,17 @@ const Game = {
         selectedMonsterIdx: 0, lastSaveTime: Date.now() 
     },
     player: null, currentMap: 'field', isFighting: false,
-    saveKey: 'cultivation_save_v18_final', // 更新Key以应用新结构
+    saveKey: 'cultivation_save_v19_clean', // 升级Key，强制重置坏档
 
     init() {
         this.player = JSON.parse(JSON.stringify(this.defaultPlayer));
         this.load();
+        
+        // 坏档检测与修复
+        if (!this.player.inventory) this.player.inventory = {};
         if (isNaN(this.player.maxHp) || this.player.maxHp <= 0) this.player = JSON.parse(JSON.stringify(this.defaultPlayer));
-        if (!this.player.skills) this.player.skills = [];
         if (this.player.sectId === undefined) { this.player.sectId = -1; this.player.sectRank = 0; }
+        if (!this.player.skills) this.player.skills = [];
 
         this.calcOfflineProfit();
         this.recalcStats();
@@ -22,17 +25,32 @@ const Game = {
         if (this.currentMap === 'field') this.loop(); 
     },
 
-    // 核心修复：属性计算包含门派加成
+    // 核心修复：100% 掉落逻辑
+    gainReward(e) {
+        this.player.exp += e.exp; 
+        this.player.money += (e.money || 0);
+        this.player.reputation += (e.reputation || 0);
+        
+        if (e.loot && e.loot.length > 0) {
+            e.loot.forEach(k => { 
+                this.addItem(k, 1);
+                // 必须在日志中确认
+                this.log(`获得: [${this.getItemName(k)}]`, 'win');
+            });
+        }
+        this.log(`胜! 修为+${e.exp} 灵石+${e.money} 名望+${e.reputation||0}`, 'win');
+    },
+
+    // 核心修复：属性计算 + 门派加成
     recalcStats() {
         let p = this.player; 
         const r = GAME_DATA.realms[p.realmIdx] || GAME_DATA.realms[0];
         
-        // 1. 境界基础
         p.maxHp = Math.floor(p.baseStats.hp * r.mult);
         p.atk = Math.floor(p.baseStats.atk * r.mult);
         p.def = Math.floor(p.baseStats.def * r.mult);
         
-        // 2. 装备加成
+        // 装备加成
         for (let s in p.equipment) {
             const item = p.equipment[s];
             if (item) { 
@@ -41,37 +59,16 @@ const Game = {
             }
         }
 
-        // 3. 门派身份加成 (新增)
+        // 门派加成 (新)
         if (p.sectId !== -1) {
             const sect = GAME_DATA.sects[p.sectId];
-            if (sect) {
-                const rank = sect.ranks[p.sectRank];
-                if (rank && rank.stats) {
-                    p.maxHp += rank.stats.hp || 0;
-                    p.atk += rank.stats.atk || 0;
-                    p.def += rank.stats.def || 0;
-                }
+            if (sect && sect.ranks[p.sectRank]) {
+                const s = sect.ranks[p.sectRank].stats;
+                p.maxHp += s.hp; p.atk += s.atk; p.def += s.def;
             }
         }
         
         if (p.hp > p.maxHp) p.hp = p.maxHp;
-    },
-
-    // 核心修复：掉落逻辑
-    gainReward(e) {
-        this.player.exp += e.exp; 
-        this.player.money += (e.money || 0);
-        const rep = e.reputation || 0;
-        this.player.reputation += rep;
-        
-        // 100% 获取掉落列表中的物品
-        if (e.loot && e.loot.length > 0) {
-            e.loot.forEach(k => { 
-                this.addItem(k, 1);
-                this.log(`获得: [${this.getItemName(k)}]`, 'win');
-            });
-        }
-        this.log(`胜! 修为+${e.exp} 灵石+${e.money} 名望+${rep}`, 'win');
     },
 
     // 战斗循环
@@ -87,7 +84,7 @@ const Game = {
             } else if (this.currentMap === 'field') {
                 e = GAME_DATA.maps.field.genEnemy(this.player, this.player.selectedMonsterIdx);
             } else return;
-        } catch(err) { console.error(err); return; }
+        } catch(err) { return; }
 
         this.isFighting = true;
         if(typeof Battle === 'undefined') return;
@@ -99,8 +96,7 @@ const Game = {
                 if (this.currentMap === 'tower') this.player.towerFloor++;
                 if (this.currentMap === 'boss') this.switchMap('field');
                 this.player.hp = this.player.maxHp;
-                this.save(); 
-                try { this.updateUI(); } catch(e){}
+                this.save(); this.updateUI();
                 setTimeout(() => this.loop(), 1000);
             },
             () => { // Lose
@@ -114,7 +110,69 @@ const Game = {
         );
     },
 
-    // 门派面板逻辑更新
+    // 核心修复：面板刷新 (防错 + 强制显示)
+    refreshPanel() {
+        const p = document.getElementById('character-panel');
+        if (p.classList.contains('hidden')) return;
+
+        // 刷新装备槽
+        for (let s in GAME_DATA.equipSlots) {
+            const el = document.getElementById(`slot-${s}`);
+            const eq = this.player.equipment[s];
+            if (eq) { 
+                el.innerText = `${this.getItemName(eq.id)}\n(卸下)`; 
+                el.className = `slot equipped tier-${Math.min(10, eq.tier)}`; 
+            } else { 
+                el.innerText = `${GAME_DATA.equipSlots[s]}: 空`; 
+                el.className = 'slot'; 
+            }
+        }
+        document.getElementById('detail-atk').innerText = this.player.atk;
+        document.getElementById('detail-def').innerText = this.player.def;
+        document.getElementById('detail-hp').innerText = this.player.maxHp;
+
+        // 刷新背包
+        const grid = document.getElementById('inventory-grid'); 
+        grid.innerHTML = '';
+        
+        const inv = this.player.inventory || {};
+        for (let [k, c] of Object.entries(inv)) {
+            if (c <= 0) continue; // 过滤空数量
+            
+            const isEquip = k.includes('_');
+            let desc = "材料", btn = '', qc = '';
+            
+            if (isEquip) { 
+                desc = "装备"; 
+                qc = 'tier-' + (k.split('_')[1] || 1); 
+                btn = `<button class="item-btn" onclick="Game.equip('${k}')">装备</button>`; 
+            } else { 
+                const item = GAME_DATA.items[k]; 
+                desc = item?.desc || "未知"; 
+                if (item && (item.type === 'book' || item.effect)) 
+                    btn = `<button class="item-btn btn-buy" onclick="Game.useItem('${k}')">使用</button>`; 
+            }
+            
+            grid.innerHTML += `
+                <div class="item-card ${qc}" style="display:block;">
+                    <div style="font-weight:bold">${this.getItemName(k)}</div>
+                    <div style="font-size:0.7em;color:#aaa">${desc}</div>
+                    <div>x${c}</div>
+                    <div class="btn-group">${btn}<button class="item-btn btn-sell" onclick="Game.sellItem('${k}')">售出</button></div>
+                </div>`;
+        }
+        
+        // 刷新技能
+        const sb = document.getElementById('skill-list-display');
+        if (sb) { 
+            sb.innerHTML = this.player.skills.length ? '' : '<div style="color:#666;font-size:0.8em">暂无</div>'; 
+            this.player.skills.forEach(sid => { 
+                sb.innerHTML += `<div class="skill-tag">${GAME_DATA.skills[sid].name}</div>`; 
+            }); 
+        }
+    },
+
+    // 门派面板
     showSectPanel() {
         const p = document.getElementById('sect-panel'); p.classList.remove('hidden');
         const info = document.getElementById('sect-info'); const shop = document.getElementById('sect-shop');
@@ -129,51 +187,13 @@ const Game = {
             const s = GAME_DATA.sects[this.player.sectId]; 
             const r = s.ranks[this.player.sectRank]; 
             const nr = s.ranks[this.player.sectRank+1];
+            const stats = `攻+${r.stats.atk} 防+${r.stats.def} 血+${r.stats.hp}`;
             
-            // 显示当前加成
-            const bonusText = `攻+${r.stats.atk} 防+${r.stats.def} 血+${r.stats.hp}`;
-            
-            info.innerHTML = `
-                <h2>${s.name}</h2>
-                <p>职位：<span style="color:gold">${r.name}</span></p>
-                <p style="font-size:0.8em;color:#aaa">加成: ${bonusText}</p>
-                <p>名望：${this.player.reputation}</p>
-                ${nr ? `<button class="item-btn btn-buy" onclick="Game.promoteSect()">晋升 ${nr.name} (${nr.cost}名望)</button>` : '<p>已至巅峰</p>'}
-            `;
-            
+            info.innerHTML = `<h2>${s.name}</h2><p>职位：<span style="color:gold">${r.name}</span></p><p style="font-size:0.8em;color:#aaa">${stats}</p><p>名望：${this.player.reputation}</p>${nr ? `<button class="item-btn btn-buy" onclick="Game.promoteSect()">晋升 ${nr.name} (${nr.cost}名望)</button>` : '<p>已至巅峰</p>'}`;
             shop.innerHTML = `<h3>藏经阁</h3><div class="grid-list" style="display:grid;grid-template-columns:1fr 1fr;gap:5px"></div>`;
             const l = shop.querySelector('.grid-list'); 
-            s.shop.forEach(id => { 
-                const it=GAME_DATA.items[id]; 
-                l.innerHTML += `<div class="item-card"><div>${it.name}</div><div style="font-size:0.7em;color:#aaa">${it.price}灵石</div><button class="item-btn" onclick="Game.buyItem('${id}')">兑换</button></div>`; 
-            });
+            s.shop.forEach(id => { const it=GAME_DATA.items[id]; l.innerHTML += `<div class="item-card"><div>${it.name}</div><div style="font-size:0.7em;color:#aaa">${it.price}灵石</div><button class="item-btn" onclick="Game.buyItem('${id}')">兑换</button></div>`; });
         }
-    },
-
-    // 面板刷新：确保装备显示
-    refreshPanel() {
-        const p = document.getElementById('character-panel');
-        if (p.classList.contains('hidden')) return;
-        for (let s in GAME_DATA.equipSlots) {
-            const el = document.getElementById(`slot-${s}`);
-            const eq = this.player.equipment[s];
-            if (eq) { el.innerText = `${this.getItemName(eq.id)}\n(卸下)`; el.className = `slot equipped tier-${Math.min(10, eq.tier)}`; } 
-            else { el.innerText = `${GAME_DATA.equipSlots[s]}: 空`; el.className = 'slot'; }
-        }
-        document.getElementById('detail-atk').innerText = this.player.atk;
-        document.getElementById('detail-def').innerText = this.player.def;
-        document.getElementById('detail-hp').innerText = this.player.maxHp;
-
-        const grid = document.getElementById('inventory-grid'); grid.innerHTML = '';
-        for (let [k, c] of Object.entries(this.player.inventory || {})) {
-            const isEquip = k.includes('_');
-            let desc = "材料", btn = '', qc = '';
-            if (isEquip) { desc = "装备"; qc = 'tier-' + (k.split('_')[1] || 1); btn = `<button class="item-btn" onclick="Game.equip('${k}')">装备</button>`; } 
-            else { const item = GAME_DATA.items[k]; desc = item?.desc || "未知"; if (item && (item.type === 'book' || item.effect)) btn = `<button class="item-btn btn-buy" onclick="Game.useItem('${k}')">使用</button>`; }
-            grid.innerHTML += `<div class="item-card ${qc}"><div style="font-weight:bold">${this.getItemName(k)}</div><div style="font-size:0.7em;color:#aaa">${desc}</div><div>x${c}</div><div class="btn-group">${btn}<button class="item-btn btn-sell" onclick="Game.sellItem('${k}')">售出</button></div></div>`;
-        }
-        const sb = document.getElementById('skill-list-display');
-        if (sb) { sb.innerHTML = this.player.skills.length ? '' : '<div style="color:#666;font-size:0.8em">暂无</div>'; this.player.skills.forEach(sid => { sb.innerHTML += `<div class="skill-tag">${GAME_DATA.skills[sid].name}</div>`; }); }
     },
 
     updateUI() {
@@ -188,7 +208,7 @@ const Game = {
         setText('val-rep', this.player.reputation);
     },
     
-    // ... (保留通用函数)
+    // ... (其他函数保持原样)
     joinSect(id) { const s = GAME_DATA.sects[id]; if (this.player.sectId!==-1){alert("已有门派");return;} if(this.player.realmIdx<s.reqRealm){alert("境界不足");return;} this.player.sectId=id; this.player.sectRank=0; this.log(`加入 [${s.name}]`, 'win'); this.save(); this.recalcStats(); this.updateUI(); this.showSectPanel(); },
     promoteSect() { if(this.player.sectId===-1)return; const s=GAME_DATA.sects[this.player.sectId]; const n=this.player.sectRank+1; if(n>=s.ranks.length){alert("最高职位");return;} const nr=s.ranks[n]; if(this.player.reputation>=nr.cost){this.player.reputation-=nr.cost;this.player.sectRank++;this.log(`晋升 [${nr.name}]`,'win');this.save();this.recalcStats();this.updateUI();this.showSectPanel();}else alert(`名望不足 ${nr.cost}`); },
     useItem(k) { const i=GAME_DATA.items[k]; if(!i)return; if(i.type==="book"){if(this.player.skills.includes(i.skillId)){alert("已学");return;}this.player.skills.push(i.skillId);this.log(`领悟 [${GAME_DATA.skills[i.skillId].name}]`,'win');}else if(i.effect&&i.effect.type==="exp"){this.player.exp+=i.effect.val;this.log(`服用${i.name},修为+${i.effect.val}`,'win');} this.player.inventory[k]--; if(this.player.inventory[k]<=0)delete this.player.inventory[k]; this.save();this.updateUI();this.refreshPanel(); },
