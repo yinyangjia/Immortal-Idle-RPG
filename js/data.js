@@ -2,65 +2,97 @@ const GAME_DATA = {
     majorRealms: ["凡人", "练气", "筑基", "金丹", "元婴", "化神", "炼虚", "合体", "大乘", "渡劫"],
     realms: [], 
 
+    // --- 物品字典 (新增修为道具) ---
     items: {
         "兽皮": { name: "粗糙兽皮", price: 10, desc: "普通的妖兽皮毛" },
         "道韵": { name: "道韵碎片", price: 50, desc: "蕴含法则的碎片" },
         "ticket_1": { name: "低级挑战券", price: 500, desc: "挑战20级首领" },
         "ticket_2": { name: "中级挑战券", price: 5000, desc: "挑战50级首领" },
         "ticket_3": { name: "高级挑战券", price: 50000, desc: "挑战90级首领" },
-        "筑基丹": { name: "筑基丹", price: 200, desc: "突破筑基期的灵药" }
+        "筑基丹": { name: "筑基丹", price: 200, desc: "突破筑基期的灵药" },
+        
+        // 新增：修为道具
+        "exp_fruit_1": { name: "灵元果", price: 1000, desc: "服用增加 500 点修为", effect: {type:"exp", val:500} },
+        "exp_fruit_2": { name: "天灵根", price: 10000, desc: "服用增加 5000 点修为", effect: {type:"exp", val:5000} },
+        
+        // 新增：功法秘籍 (item type = 'book')
+        "book_fire": { name: "烈火剑法", price: 2000, desc: "攻击有20%几率造成200%伤害", type: "book", skillId: "skill_fire" },
+        "book_ice":  { name: "寒冰诀", price: 5000, desc: "攻击有10%几率造成300%伤害", type: "book", skillId: "skill_ice" },
+        "book_life": { name: "青木长生功", price: 8000, desc: "每回合恢复 5% 最大生命值", type: "book", skillId: "skill_life" }
     },
+
+    // --- 技能定义 ---
+    skills: {
+        "skill_fire": { name: "🔥烈火剑", rate: 0.2, dmgMult: 2.0, desc: "烈焰爆发！" },
+        "skill_ice":  { name: "❄️寒冰刺", rate: 0.1, dmgMult: 3.0, desc: "绝对零度！" },
+        "skill_life": { name: "💚回春", type: "heal", rate: 1.0, healMult: 0.05, desc: "生生不息" }
+    },
+
+    // --- 门派定义 ---
+    sects: [
+        {
+            id: 0, name: "青云门", reqRealm: 1, // 练气期可入
+            ranks: [
+                { name: "外门弟子", cost: 0 },
+                { name: "内门弟子", cost: 100 }, // 消耗名望
+                { name: "真传弟子", cost: 1000 },
+                { name: "长老", cost: 10000 }
+            ],
+            shop: ["book_fire", "book_life"] // 门派商店出售的秘籍
+        },
+        {
+            id: 1, name: "魔天宗", reqRealm: 3, // 金丹期可入
+            ranks: [
+                { name: "魔卒", cost: 0 },
+                { name: "魔将", cost: 500 },
+                { name: "魔帅", cost: 5000 },
+                { name: "魔王", cost: 50000 }
+            ],
+            shop: ["book_ice", "ticket_2"]
+        }
+    ],
 
     equipSlots: { weapon: "武器", head: "头饰", neck: "项链", body: "防具", pants: "裤子", shoes: "鞋子", ornament: "装饰" },
     
-    // 自动生成100级怪物，平滑曲线
-    fieldMonsters: Array.from({length: 20}, (_, i) => {
-        const lv = (i + 1) * 5;
-        const names = ["野兔","灰狼","蛮牛","赤雕","猛虎","妖狐","魔猿","幽蟒","灵鹤","蛟龙"];
-        const name = names[i % 10] + ((i >= 10) ? "王" : "精");
-        return {
-            level: lv,
-            name: name,
-            hpMult: 1 + i * 2,
-            atkMult: 0.5 + i * 0.8,
-            exp: Math.floor(20 * Math.pow(1.3, i)),
-            money: 10 + i * 15,
-            loot: ["兽皮"], // 基础掉落，装备动态生成
-            dropRate: 0.2 // 20% 掉率
-        };
-    }),
-
-    bosses: [
-        { name: "地岩守卫", level: 20, ticket: "ticket_1", hpMult: 40, atkMult: 10, exp: 3000, money: 1000, drops: ["weapon_3", "body_3"] },
-        { name: "嗜血狼王", level: 50, ticket: "ticket_2", hpMult: 300, atkMult: 50, exp: 50000, money: 20000, drops: ["weapon_6", "body_6"] },
-        { name: "九幽冥凤", level: 90, ticket: "ticket_3", hpMult: 2000, atkMult: 500, exp: 1000000, money: 300000, drops: ["weapon_10", "body_10"] }
-    ],
-
+    // 装备属性
     getEquipStats: (type, tier) => {
         const base = { weapon:{atk:15}, head:{def:5,hp:80}, neck:{atk:5,hp:150}, body:{def:15,hp:300}, pants:{def:8,hp:150}, shoes:{atk:3,def:3}, ornament:{atk:15} }[type] || {atk:1,def:1,hp:1};
         const mult = Math.pow(1.35, tier - 1);
         return { atk: Math.floor((base.atk||0)*mult), def: Math.floor((base.def||0)*mult), hp: Math.floor((base.hp||0)*mult) };
     },
 
+    // 怪物 (增加 reputation 名望奖励)
+    fieldMonsters: Array.from({length: 20}, (_, i) => {
+        const lv = (i + 1) * 5;
+        const names = ["野兔","灰狼","蛮牛","赤雕","猛虎","妖狐","魔猿","幽蟒","灵鹤","蛟龙"];
+        return {
+            level: lv,
+            name: names[i % 10] + ((i >= 10) ? "王" : "精"),
+            hpMult: 1 + i * 2, atkMult: 0.5 + i * 0.8,
+            exp: Math.floor(20 * Math.pow(1.3, i)),
+            money: 10 + i * 15,
+            reputation: 1 + Math.floor(i * 0.5), // 新增：名望奖励
+            loot: ["兽皮"], dropRate: 0.2
+        };
+    }),
+
+    bosses: [
+        { name: "地岩守卫", level: 20, ticket: "ticket_1", hpMult: 40, atkMult: 10, exp: 3000, money: 1000, reputation: 100, drops: ["weapon_3", "body_3"] },
+        { name: "嗜血狼王", level: 50, ticket: "ticket_2", hpMult: 300, atkMult: 50, exp: 50000, money: 20000, reputation: 500, drops: ["weapon_6", "body_6"] },
+        { name: "九幽冥凤", level: 90, ticket: "ticket_3", hpMult: 2000, atkMult: 500, exp: 1000000, money: 300000, reputation: 5000, drops: ["weapon_10", "body_10"] }
+    ],
+
     maps: {
         field: { name: "蛮荒野外", genEnemy: (p, idx) => {
             const m = GAME_DATA.fieldMonsters[idx || 0];
-            // 动态生成装备掉落：等级越高，掉落装备阶级越高
             const tier = Math.floor(m.level / 10) + 1;
             const extraLoot = [];
             if(Math.random() < 0.5) extraLoot.push(["weapon","body","head"][Math.floor(Math.random()*3)] + "_" + tier);
-            
-            return { 
-                name: m.name, 
-                hp: Math.max(50, Math.floor(p.atk * 3 * m.hpMult)), // 动态血量
-                atk: Math.floor(p.def * 0.8 * m.atkMult), 
-                def: 0, exp: m.exp, money: m.money, 
-                loot: m.loot.concat(extraLoot) 
-            };
+            return { name: m.name, hp: Math.max(50, Math.floor(p.atk * 3 * m.hpMult)), atk: Math.floor(p.def * 0.8 * m.atkMult), def: 0, exp: m.exp, money: m.money, reputation: m.reputation, loot: m.loot.concat(extraLoot) };
         }},
         tower: { name: "镇妖塔", genEnemy: (p, f) => {
             const s = Math.pow(1.15, f);
-            return { name: `第${f}层 塔灵`, hp: Math.floor(300 * s), atk: Math.floor(25 * s), def: Math.floor(10 * s), exp: Math.floor(80 * s), money: Math.floor(40 * s), loot: ["道韵"] };
+            return { name: `第${f}层 塔灵`, hp: Math.floor(300 * s), atk: Math.floor(25 * s), def: Math.floor(10 * s), exp: Math.floor(80 * s), money: Math.floor(40 * s), reputation: Math.floor(2*f), loot: ["道韵"] };
         }}
     }
 };
@@ -71,7 +103,7 @@ const GAME_DATA = {
         if (idx === 0) { GAME_DATA.realms.push({ name: "凡人", exp: 200, mult: 1, isMajor: true }); return; }
         for (let i = 1; i <= 10; i++) {
             bExp = Math.floor(bExp * 1.25 + 200);
-            if (i === 1) sMult *= 1.5; else sMult *= 1.1; // 属性系数
+            if (i === 1) sMult *= 1.5; else sMult *= 1.1;
             GAME_DATA.realms.push({ name: `${name}${i === 10 ? '圆满' : i + '层'}`, exp: bExp, mult: parseFloat(sMult.toFixed(2)), isMajor: i === 1 });
         }
     });
