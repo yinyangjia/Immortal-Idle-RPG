@@ -1,3 +1,4 @@
+// js/engine.js
 const Game = {
     player: {
         realmIdx: 0,
@@ -5,8 +6,8 @@ const Game = {
         hp: 100, maxHp: 100, atk: 10, def: 2, pen: 0,
         exp: 0, money: 0,
         towerFloor: 1,
-        inventory: {}, // { "weapon_1": 2, "body_1": 1 }
-        equipment: {}, // { weapon: {id: "weapon_1", tier: 1}, head: null }
+        inventory: {}, 
+        equipment: {}, 
         selectedMonsterIdx: 0
     },
     currentMap: 'field',
@@ -14,7 +15,12 @@ const Game = {
 
     init() {
         this.load();
-        this.recalcStats(); // 必须重新计算属性
+        // 修复：如果存档里的 realmIdx 超过了新数据的长度，重置
+        if (this.player.realmIdx >= GAME_DATA.realms.length) {
+            this.player.realmIdx = 0;
+            this.player.baseStats = { hp: 100, atk: 10, def: 2 };
+        }
+        this.recalcStats();
         this.updateUI();
         if(this.currentMap !== 'field') this.loop();
     },
@@ -53,10 +59,9 @@ const Game = {
         this.player.exp += enemy.exp;
         this.player.money += (enemy.money || 0);
         
-        // 掉落装备逻辑
         if (enemy.loot && enemy.loot.length > 0) {
             enemy.loot.forEach(itemKey => {
-                if(Math.random() < 0.4) { // 40% 掉率
+                if(Math.random() < 0.4) { 
                     this.addItem(itemKey, 1);
                     Logger.log(`获得装备: [${this.getItemName(itemKey)}]`, 'win');
                 }
@@ -64,101 +69,78 @@ const Game = {
         }
     },
 
-    // --- 物品与装备系统 ---
-    
     addItem(key, count) {
         if (!this.player.inventory) this.player.inventory = {};
         this.player.inventory[key] = (this.player.inventory[key] || 0) + count;
     },
 
-    // 装备物品: key = "weapon_1"
     equip(key) {
         const [type, tierStr] = key.split('_');
         const tier = parseInt(tierStr);
-
-        // 1. 如果当前位置有装备，先卸下放入背包
         if (this.player.equipment[type]) {
             const oldItemKey = `${type}_${this.player.equipment[type].tier}`;
             this.addItem(oldItemKey, 1);
         }
-
-        // 2. 穿上新装备，背包-1
         this.player.equipment[type] = { id: key, tier: tier };
         this.player.inventory[key]--;
         if (this.player.inventory[key] <= 0) delete this.player.inventory[key];
-
         Logger.log(`穿戴了 [${this.getItemName(key)}]`);
         this.recalcStats();
         this.save();
-        this.toggleCharacterPanel(); // 刷新界面
-        this.toggleCharacterPanel(); // 重新打开
+        this.toggleCharacterPanel(); this.toggleCharacterPanel();
     },
 
     unequip(slot) {
         if (!this.player.equipment[slot]) return;
         const item = this.player.equipment[slot];
-        
         this.addItem(item.id, 1);
         delete this.player.equipment[slot];
-        
         this.recalcStats();
         this.save();
-        this.toggleCharacterPanel(); // 刷新
-        this.toggleCharacterPanel(); 
+        this.toggleCharacterPanel(); this.toggleCharacterPanel(); 
     },
 
-    // 核心：一键合成 (3合1)
     synthesizeAll() {
         let synthed = false;
         const items = this.player.inventory;
-        
-        // 遍历背包
         for (let key in items) {
             if (items[key] >= 3) {
                 const [type, tierStr] = key.split('_');
                 const tier = parseInt(tierStr);
-                
-                if (tier >= 20) continue; // 最高20阶
-
+                if (tier >= 20) continue; 
                 const count = items[key];
                 const newCount = Math.floor(count / 3);
                 const remain = count % 3;
-                
                 if (newCount > 0) {
                     const nextKey = `${type}_${tier + 1}`;
-                    
                     items[key] = remain;
                     if (remain === 0) delete items[key];
-                    
                     this.addItem(nextKey, newCount);
                     Logger.log(`合成成功！${newCount} 个 [${this.getItemName(nextKey)}]`, 'win');
                     synthed = true;
                 }
             }
         }
-        
         if (synthed) {
-            this.toggleCharacterPanel(); // 刷新
-            this.toggleCharacterPanel();
+            this.toggleCharacterPanel(); this.toggleCharacterPanel();
             this.save();
         } else {
             alert("没有足够数量（3个同名）的装备可合成");
         }
     },
 
-    // --- 属性计算 ---
     recalcStats() {
-        // 1. 重置为裸装
         let p = this.player;
-        if (!p.baseStats) p.baseStats = { hp: 100, atk: 10, def: 2 }; // 兼容旧档
+        if (!p.baseStats) p.baseStats = { hp: 100, atk: 10, def: 2 };
 
-        // 根据境界计算基础属性
+        // 核心修改：属性不再是 baseStats * mult，而是动态计算
+        // 这里的 mult 已经在 data.js 里被平滑处理过了
         const realm = GAME_DATA.realms[p.realmIdx];
+        
         p.maxHp = Math.floor(p.baseStats.hp * realm.mult);
         p.atk = Math.floor(p.baseStats.atk * realm.mult);
         p.def = Math.floor(p.baseStats.def * realm.mult);
 
-        // 2. 加上装备属性
         for (let slot in p.equipment) {
             const item = p.equipment[slot];
             if (item) {
@@ -168,12 +150,9 @@ const Game = {
                 p.def += stats.def;
             }
         }
-        
-        // 保持当前血量不超过上限
         if (p.hp > p.maxHp) p.hp = p.maxHp;
     },
 
-    // --- 界面辅助 ---
     getItemName(key) {
         const [type, tier] = key.split('_');
         const nameMap = GAME_DATA.equipSlots;
@@ -183,40 +162,30 @@ const Game = {
     toggleCharacterPanel() {
         const panel = document.getElementById('character-panel');
         const grid = document.getElementById('inventory-grid');
-        
         if (panel.classList.contains('hidden')) {
             panel.classList.remove('hidden');
-            
-            // 渲染装备槽
             for (let slot in GAME_DATA.equipSlots) {
                 const el = document.getElementById(`slot-${slot}`);
                 const equipped = this.player.equipment[slot];
                 if (equipped) {
-                    el.innerText = `${this.getItemName(equipped.id)}\n(点击卸下)`;
-                    el.classList.add('equipped');
+                    el.innerText = `${this.getItemName(equipped.id)}\n(卸下)`;
                     el.className = `slot equipped tier-${Math.min(10, equipped.tier)}`;
                 } else {
                     el.innerText = `${GAME_DATA.equipSlots[slot]}: 空`;
                     el.className = 'slot';
                 }
             }
-
-            // 渲染面板数值
             document.getElementById('detail-atk').innerText = this.player.atk;
             document.getElementById('detail-def').innerText = this.player.def;
             document.getElementById('detail-hp').innerText = this.player.maxHp;
-
-            // 渲染背包
             grid.innerHTML = '';
             for (let [key, count] of Object.entries(this.player.inventory || {})) {
                 const [type, tier] = key.split('_');
-                // 获取该装备的属性预览
                 const stats = GAME_DATA.getEquipStats(type, parseInt(tier));
                 let statText = "";
                 if(stats.atk) statText += `攻+${stats.atk} `;
                 if(stats.def) statText += `防+${stats.def} `;
                 if(stats.hp) statText += `血+${stats.hp}`;
-
                 grid.innerHTML += `
                     <div class="item-card tier-${Math.min(10, tier)}">
                         <div class="item-name">${this.getItemName(key)}</div>
@@ -225,13 +194,11 @@ const Game = {
                         <button class="item-btn" onclick="Game.equip('${key}')">装备</button>
                     </div>`;
             }
-
         } else {
             panel.classList.add('hidden');
         }
     },
     
-    // 突破、地图切换等保持旧逻辑...
     switchMap(mapType) {
         if(this.isFighting) Battle.stop(); this.isFighting = false;
         this.currentMap = mapType;
@@ -240,6 +207,7 @@ const Game = {
         if (mapType === 'field') this.showMonsterSelector();
         else this.loop();
     },
+
     showMonsterSelector() {
         const panel = document.getElementById('monster-selector');
         const list = document.getElementById('monster-list');
@@ -258,20 +226,37 @@ const Game = {
         document.getElementById('monster-selector').classList.add('hidden');
         this.loop();
     },
-    breakthrough() { /* 保持旧逻辑，略 */ 
+
+    breakthrough() {
         const realm = GAME_DATA.realms[this.player.realmIdx];
+        const nextRealm = GAME_DATA.realms[this.player.realmIdx + 1];
+
+        if (!nextRealm) { alert("已至巅峰！"); return; }
+
         if(this.player.exp >= realm.exp) {
             this.player.exp -= realm.exp;
             this.player.realmIdx++;
-            // 突破只增加基础属性
-            this.player.baseStats.hp = Math.floor(this.player.baseStats.hp * 1.5);
-            this.player.baseStats.atk = Math.floor(this.player.baseStats.atk * 1.5);
-            this.player.baseStats.def = Math.floor(this.player.baseStats.def * 1.5);
+            
+            // 核心修改：突破时增加基础属性
+            // 小境界加成少，大境界加成多
+            if (nextRealm.isMajor) {
+                Logger.log(`【渡劫成功】大境界突破！晋升 ${nextRealm.name}`, 'win');
+                this.player.baseStats.hp = Math.floor(this.player.baseStats.hp * 1.2);
+                this.player.baseStats.atk = Math.floor(this.player.baseStats.atk * 1.2);
+                this.player.baseStats.def = Math.floor(this.player.baseStats.def * 1.2);
+            } else {
+                Logger.log(`【突破】小境界提升！晋升 ${nextRealm.name}`, 'win');
+                this.player.baseStats.hp = Math.floor(this.player.baseStats.hp * 1.05);
+                this.player.baseStats.atk = Math.floor(this.player.baseStats.atk * 1.05);
+                this.player.baseStats.def = Math.floor(this.player.baseStats.def * 1.05);
+            }
+            
             this.recalcStats();
             this.save();
             this.updateUI();
-        } else alert("修为不足");
+        } else alert(`修为不足！需 ${realm.exp}`);
     },
+
     updateUI() {
         const r = GAME_DATA.realms[this.player.realmIdx];
         document.getElementById('realm-title').innerText = r.name;
