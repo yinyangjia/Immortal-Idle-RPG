@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>万古仙途：道法自然</title>
+    <title>万古仙途：天道酬勤</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -54,9 +54,9 @@
             <h2>道友法身</h2>
             <button onclick="Game.toggleCharacterPanel()">关闭</button>
         </div>
-        <div class="panel-content">
-            <div class="equip-section">
-                <h3>已穿戴</h3>
+        
+        <div class="panel-split" style="flex:1; overflow:hidden; display:flex;">
+            <div class="equip-col">
                 <div id="slot-weapon" class="slot" onclick="Game.unequip('weapon')">武器: 空</div>
                 <div id="slot-head" class="slot" onclick="Game.unequip('head')">头饰: 空</div>
                 <div id="slot-body" class="slot" onclick="Game.unequip('body')">防具: 空</div>
@@ -65,20 +65,20 @@
                 <div id="slot-shoes" class="slot" onclick="Game.unequip('shoes')">鞋子: 空</div>
                 <div id="slot-ornament" class="slot" onclick="Game.unequip('ornament')">装饰: 空</div>
                 
-                <div style="margin-top:10px; font-size:0.85em; color:#aaa; text-align:center;">
+                <div style="margin-top:10px; font-size:0.8em; color:#aaa; text-align:center;">
                     总攻:<span id="detail-atk">0</span> 总防:<span id="detail-def">0</span> 总血:<span id="detail-hp">0</span>
                 </div>
 
                 <div style="margin-top:10px; border-top:1px solid #444; padding-top:5px;">
-                    <div style="font-size:0.9em; color:var(--rare-blue); margin-bottom:5px;">已修习功法 (点击切换):</div>
-                    <div id="skill-list-display" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
+                    <div style="font-size:0.85em; color:var(--rare-blue); margin-bottom:5px;">已装备功法 (点击卸载):</div>
+                    <div id="skill-list-display" style="display:flex; flex-wrap:wrap; gap:4px;"></div>
                 </div>
             </div>
 
-            <div class="bag-section">
+            <div class="bag-col">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
                     <h3>储物袋</h3>
-                    <button onclick="Game.synthesizeAll()" style="padding:5px; background:var(--accent-gold); color:#000; border:none; font-weight:bold;">🔥 一键合成</button>
+                    <button onclick="Game.synthesizeAll()" style="padding:4px 8px; background:var(--accent-gold); color:#000; border:none; font-weight:bold; font-size:0.8em;">🔥 一键合成</button>
                 </div>
                 <div id="inventory-grid"></div>
             </div>
@@ -86,19 +86,31 @@
     </div>
 
     <div id="sect-panel" class="modal hidden">
-        <div class="panel-header"><h2>宗门大殿</h2><button onclick="document.getElementById('sect-panel').classList.add('hidden')">离开</button></div>
-        <div id="sect-info" style="margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:15px;"></div>
-        <div id="sect-shop"></div>
+        <div class="panel-header">
+            <h2>宗门大殿</h2>
+            </div>
+        <div class="panel-content">
+            <div id="sect-info" style="margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:15px;"></div>
+            <div id="sect-shop"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-close-modal" onclick="document.getElementById('sect-panel').classList.add('hidden')">离开大殿</button>
+        </div>
     </div>
 
     <div id="monster-selector" class="modal hidden">
-        <h3 id="selector-title" style="margin-top:0; color:var(--accent-gold)">列表</h3>
+        <div class="panel-header">
+            <h2 id="selector-title" style="color:var(--accent-gold)">列表</h2>
+        </div>
         <div id="monster-list"></div>
-        <button onclick="document.getElementById('monster-selector').classList.add('hidden')" style="width:100%; padding:10px; margin-top:10px;">关闭</button>
+        <div class="modal-footer">
+            <button class="btn-close-modal" onclick="document.getElementById('monster-selector').classList.add('hidden')">关闭列表</button>
+        </div>
     </div>
 
     <script src="js/data.js"></script>
     <script src="js/battle.js"></script>
     <script src="js/engine.js"></script>
+
 </body>
 </html>
