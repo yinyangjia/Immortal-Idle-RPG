@@ -11,9 +11,11 @@ const Battle = {
                 const sk = GAME_DATA.skills[sid];
                 if (sk && Math.random() < sk.rate) {
                     if (sk.type === 'heal') {
-                        const heal = Math.floor(attacker.maxHp * sk.healMult);
-                        attacker.hp = Math.min(attacker.maxHp, attacker.hp + heal);
-                        if(onLog) onLog(`${sk.name} 恢复 ${heal} 生命`);
+                        // 修复：确保 maxHp 存在
+                        const max = attacker.maxHp || 100;
+                        const heal = Math.floor(max * sk.healMult);
+                        attacker.hp = Math.min(max, (attacker.hp || 0) + heal);
+                        if(onLog) onLog(`${sk.name} 触发！恢复 ${heal} 生命`);
                     } else {
                         multiplier *= sk.dmgMult;
                         if(onLog) onLog(`${sk.name} 触发！伤害翻倍！`);
@@ -32,10 +34,10 @@ const Battle = {
         const hpBar = document.getElementById('enemy-hp-bar');
         if(nameEl) nameEl.innerText = enemy.name;
         
-        let currentEnemyHp = enemy.hp;
-        let maxEnemyHp = enemy.hp;
+        let currentEnemyHp = enemy.hp || 100;
+        let maxEnemyHp = enemy.hp || 100;
 
-        // 初始 UI 更新
+        // 强制刷新一次UI，防止NaN
         if(window.Game) Game.updateUI();
 
         this.intervalId = setInterval(() => {
@@ -43,7 +45,6 @@ const Battle = {
             let pDmg = this.calcDmg(player, enemy, playerSkills, onLog);
             currentEnemyHp -= pDmg;
             
-            // 更新敌人血条 (视觉)
             if (hpBar) hpBar.style.width = Math.max(0, (currentEnemyHp / maxEnemyHp) * 100) + "%";
 
             if (currentEnemyHp <= 0) {
@@ -54,7 +55,7 @@ const Battle = {
             let eDmg = this.calcDmg(enemy, player, null, null);
             player.hp -= eDmg;
             
-            // 核心：每回合强制更新 UI，防止血条卡死
+            // 核心：每回合刷新UI
             if(window.Game) Game.updateUI();
 
             if (player.hp <= 0) {
