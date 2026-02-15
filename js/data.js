@@ -2,29 +2,34 @@ const GAME_DATA = {
     majorRealms: ["凡人", "练气", "筑基", "金丹", "元婴", "化神", "炼虚", "合体", "大乘", "渡劫"],
     realms: [], 
 
+    // 物品定义
     items: {
-        "兽皮": { name: "粗糙兽皮", price: 10, desc: "基础材料" },
-        "道韵": { name: "道韵碎片", price: 50, desc: "爬塔掉落" },
+        // 基础
+        "兽皮": { name: "粗糙兽皮", price: 10, desc: "普通的妖兽皮毛" },
+        "道韵": { name: "道韵碎片", price: 50, desc: "蕴含法则的碎片" },
         "ticket_1": { name: "低级挑战券", price: 500, desc: "挑战20级首领" },
         "ticket_2": { name: "中级挑战券", price: 5000, desc: "挑战50级首领" },
         "ticket_3": { name: "高级挑战券", price: 50000, desc: "挑战90级首领" },
-        "筑基丹": { name: "筑基丹", price: 200, desc: "境界突破" },
-        "exp_fruit_1": { name: "灵元果", price: 1000, desc: "修为+500", effect: {type:"exp", val:500} },
-        "exp_fruit_2": { name: "天灵根", price: 10000, desc: "修为+5000", effect: {type:"exp", val:5000} },
+        "筑基丹": { name: "筑基丹", price: 200, desc: "突破筑基期的灵药" },
         
-        // 功法 (type: book)
-        "book_fire": { name: "烈火剑法", price: 1000, desc: "20%几率 2倍暴击", type: "book", skillId: "skill_fire" },
-        "book_ice":  { name: "寒冰诀", price: 2000, desc: "10%几率 3倍暴击", type: "book", skillId: "skill_ice" },
-        "book_life": { name: "青木长生功", price: 3000, desc: "每回合回血 5%", type: "book", skillId: "skill_life" }
+        // 消耗品
+        "exp_fruit_1": { name: "灵元果", price: 1000, desc: "服用增加 500 点修为", effect: {type:"exp", val:500} },
+        "exp_fruit_2": { name: "天灵根", price: 10000, desc: "服用增加 5000 点修为", effect: {type:"exp", val:5000} },
+        
+        // 技能书 (SkillId 必须与下方 skills 对应)
+        "book_fire": { name: "秘籍·烈火剑", price: 1000, desc: "习得烈火剑法 (暴击)", type: "book", skillId: "skill_fire" },
+        "book_ice":  { name: "秘籍·寒冰诀", price: 2000, desc: "习得寒冰诀 (高暴)", type: "book", skillId: "skill_ice" },
+        "book_life": { name: "秘籍·长生功", price: 3000, desc: "习得回春术 (回血)", type: "book", skillId: "skill_life" }
     },
 
+    // 技能定义
     skills: {
-        "skill_fire": { name: "🔥烈火", rate: 0.2, dmgMult: 2.0 },
-        "skill_ice":  { name: "❄️寒冰", rate: 0.1, dmgMult: 3.0 },
-        "skill_life": { name: "💚回春", type: "heal", rate: 1.0, healMult: 0.05 }
+        "skill_fire": { name: "🔥烈火剑", rate: 0.25, dmgMult: 2.0 },
+        "skill_ice":  { name: "❄️寒冰刺", rate: 0.15, dmgMult: 3.0 },
+        "skill_life": { name: "💚回春术", type: "heal", rate: 1.0, healMult: 0.05 }
     },
 
-    // --- 门派系统 (10级线性晋升 + 属性加成) ---
+    // 门派定义
     sects: [
         { 
             id: 0, name: "青云门", reqRealm: 1, 
@@ -62,10 +67,16 @@ const GAME_DATA = {
 
     equipSlots: { weapon: "武器", head: "头饰", neck: "项链", body: "防具", pants: "裤子", shoes: "鞋子", ornament: "装饰" },
     
+    // 安全的装备属性计算
     getEquipStats: (type, tier) => {
-        const base = { weapon:{atk:15}, head:{def:5,hp:80}, neck:{atk:5,hp:150}, body:{def:15,hp:300}, pants:{def:8,hp:150}, shoes:{atk:3,def:3}, ornament:{atk:15} }[type] || {atk:1,def:1,hp:1};
-        const mult = Math.pow(1.4, tier - 1); // 提升成长率
-        return { atk: Math.floor((base.atk||0)*mult), def: Math.floor((base.def||0)*mult), hp: Math.floor((base.hp||0)*mult) };
+        const base = { weapon:{atk:15}, head:{def:5,hp:80}, neck:{atk:5,hp:150}, body:{def:15,hp:300}, pants:{def:8,hp:150}, shoes:{atk:3,def:3}, ornament:{atk:15} }[type] || {atk:0,def:0,hp:0};
+        const t = parseInt(tier) || 1;
+        const mult = Math.pow(1.4, t - 1);
+        return { 
+            atk: Math.floor((base.atk||0)*mult), 
+            def: Math.floor((base.def||0)*mult), 
+            hp: Math.floor((base.hp||0)*mult) 
+        };
     },
 
     // 怪物
@@ -92,7 +103,6 @@ const GAME_DATA = {
     maps: {
         field: { name: "蛮荒野外", genEnemy: (p, idx) => {
             const m = GAME_DATA.fieldMonsters[idx || 0];
-            // 掉落逻辑：必带一件装备
             const extraLoot = [];
             const parts = ["weapon","body","head","neck","pants","shoes","ornament"];
             const part = parts[Math.floor(Math.random() * parts.length)];
