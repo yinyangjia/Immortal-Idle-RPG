@@ -16,17 +16,15 @@ const Battle = {
                         attacker.hp = Math.min(max, (attacker.hp||0) + heal);
                         if(onLog) onLog(`${sk.name} 恢复 ${heal} 生命`);
                     } else if (sk.type === 'drain') {
-                         // 嗜血
                          const dmg = Math.max(1, atk - def);
                          const drain = Math.floor(dmg * sk.drainMult);
                          attacker.hp = Math.min(attacker.maxHp, attacker.hp + drain);
-                         multiplier = 1; // 正常伤害
-                         if(onLog) onLog(`${sk.name} 吸取 ${drain} 生命`);
+                         if(onLog) onLog(`${sk.name} 吸血 ${drain}`);
                     } else if (sk.type === 'passive') {
-                        // 被动已在 engine 处理
+                        // pass
                     } else {
                         multiplier *= sk.dmgMult;
-                        if(onLog) onLog(`${sk.name} 暴击！`);
+                        if(onLog) onLog(`${sk.name} 暴击!`);
                     }
                 }
             });
@@ -45,10 +43,10 @@ const Battle = {
         let currentEnemyHp = enemy.hp || 100;
         let maxEnemyHp = enemy.hp || 100;
 
-        // 初始刷新
         if(window.Game) Game.updateUI();
 
-        this.intervalId = setInterval(() => {
+        // 核心修正：立即执行第一次攻击，不再等待1秒
+        const turn = () => {
             // 1. 玩家攻击
             let pDmg = this.calcDmg(player, enemy, playerSkills, onLog);
             currentEnemyHp -= pDmg;
@@ -63,13 +61,19 @@ const Battle = {
             let eDmg = this.calcDmg(enemy, player, null, null);
             player.hp -= eDmg;
             
-            // 核心：强制刷新UI，修复血条不动
             if(window.Game) Game.updateUI();
 
             if (player.hp <= 0) {
                 this.stop(); if(onLose) onLose(); return;
             }
-        }, 1000);
+        };
+
+        // 立即执行一回合
+        turn();
+        // 如果没死，才开启循环
+        if (currentEnemyHp > 0 && player.hp > 0) {
+            this.intervalId = setInterval(turn, 1000); // 正常攻速
+        }
     },
 
     stop() {
