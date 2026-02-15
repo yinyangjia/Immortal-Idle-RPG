@@ -35,7 +35,10 @@ const Battle = {
     },
 
     start(player, enemy, playerSkills, onWin, onLose, onLog) {
+        // 1. 彻底清除旧循环
         this.stop();
+        
+        // 2. 初始化 UI
         const nameEl = document.getElementById('enemy-name');
         const hpBar = document.getElementById('enemy-hp-bar');
         if(nameEl) nameEl.innerText = enemy.name;
@@ -45,38 +48,49 @@ const Battle = {
 
         if(window.Game) Game.updateUI();
 
-        // 核心修正：立即执行第一次攻击，不再等待1秒
+        // 3. 定义回合逻辑
         const turn = () => {
-            // 1. 玩家攻击
+            // 玩家攻击
             let pDmg = this.calcDmg(player, enemy, playerSkills, onLog);
             currentEnemyHp -= pDmg;
             
+            // 更新血条
             if (hpBar) hpBar.style.width = Math.max(0, (currentEnemyHp / maxEnemyHp) * 100) + "%";
 
+            // 判定胜利
             if (currentEnemyHp <= 0) {
-                this.stop(); if(onWin) onWin(); return;
+                this.stop(); 
+                if(onWin) onWin(); 
+                return;
             }
 
-            // 2. 敌人反击
+            // 敌人反击
             let eDmg = this.calcDmg(enemy, player, null, null);
             player.hp -= eDmg;
             
             if(window.Game) Game.updateUI();
 
+            // 判定失败
             if (player.hp <= 0) {
-                this.stop(); if(onLose) onLose(); return;
+                this.stop(); 
+                if(onLose) onLose(); 
+                return;
             }
         };
 
-        // 立即执行一回合
+        // 4. 立即执行第一回合 (秒杀检测)
         turn();
-        // 如果没死，才开启循环
+
+        // 5. 若战斗未结束，开启循环 (每秒一回合)
         if (currentEnemyHp > 0 && player.hp > 0) {
-            this.intervalId = setInterval(turn, 1000); // 正常攻速
+            this.intervalId = setInterval(turn, 1000);
         }
     },
 
     stop() {
-        if (this.intervalId) { clearInterval(this.intervalId); this.intervalId = null; }
+        if (this.intervalId) { 
+            clearInterval(this.intervalId); 
+            this.intervalId = null; 
+        }
     }
 };
