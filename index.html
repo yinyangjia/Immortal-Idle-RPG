@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>万古仙途：宗门崛起</title>
+    <title>万古仙途：魔晶降世</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="game-container">
         <div id="top-bar">
-            <button onclick="Game.toggleCharacterPanel()">👤 角色 / 背包</button>
+            <button onclick="Game.toggleCharacterPanel()">👤 角色/背包</button>
             <div class="currency">
                 灵石: <span id="val-money" style="color:#fff">0</span> | 
                 名望: <span id="val-rep" style="color:var(--rare-blue)">0</span>
@@ -20,19 +20,18 @@
         <header>
             <h1 id="realm-title">凡人</h1>
             <div class="stats-grid">
-                <div>❤️ 生命: <span id="val-hp">0</span> / <span id="val-max-hp">0</span></div>
+                <div>❤️ 生命: <span id="val-hp">0</span>/<span id="val-max-hp">0</span></div>
                 <div>⚔️ 攻击: <span id="val-atk">0</span></div>
                 <div>🛡️ 防御: <span id="val-def">0</span></div>
                 <div class="full-width">
                     ✨ 修为: <span id="val-exp">0</span> / <span id="val-max-exp">0</span>
                 </div>
             </div>
-            
             <button id="btn-breakthrough" onclick="Game.breakthrough()">⚡ 尝试突破瓶颈 ⚡</button>
         </header>
 
         <div id="log-container">
-            <div class="log-entry log-system">欢迎回到修仙界...</div>
+            <div class="log-entry log-system">修仙之路漫漫...</div>
         </div>
 
         <div id="map-controls">
@@ -56,10 +55,9 @@
             <h2>道友法身</h2>
             <button onclick="Game.toggleCharacterPanel()">关闭</button>
         </div>
-        
         <div class="panel-content">
             <div class="equip-section">
-                <h3>已穿戴装备</h3>
+                <h3>已穿戴</h3>
                 <div id="slot-weapon" class="slot" onclick="Game.unequip('weapon')">武器: 空</div>
                 <div id="slot-head" class="slot" onclick="Game.unequip('head')">头饰: 空</div>
                 <div id="slot-body" class="slot" onclick="Game.unequip('body')">防具: 空</div>
@@ -83,8 +81,7 @@
                     <h3>储物袋</h3>
                     <button onclick="Game.synthesizeAll()" style="padding:5px; background:var(--accent-gold); color:#000; border:none; font-weight:bold;">🔥 一键合成</button>
                 </div>
-                <div id="inventory-grid">
-                    </div>
+                <div id="inventory-grid"></div>
             </div>
         </div>
     </div>
@@ -107,6 +104,5 @@
     <script src="js/data.js"></script>
     <script src="js/battle.js"></script>
     <script src="js/engine.js"></script>
-
 </body>
 </html>
