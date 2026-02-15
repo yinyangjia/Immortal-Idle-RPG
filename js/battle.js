@@ -11,14 +11,22 @@ const Battle = {
                 const sk = GAME_DATA.skills[sid];
                 if (sk && Math.random() < sk.rate) {
                     if (sk.type === 'heal') {
-                        // 修复：确保 maxHp 存在
                         const max = attacker.maxHp || 100;
                         const heal = Math.floor(max * sk.healMult);
-                        attacker.hp = Math.min(max, (attacker.hp || 0) + heal);
-                        if(onLog) onLog(`${sk.name} 触发！恢复 ${heal} 生命`);
+                        attacker.hp = Math.min(max, (attacker.hp||0) + heal);
+                        if(onLog) onLog(`${sk.name} 恢复 ${heal} 生命`);
+                    } else if (sk.type === 'drain') {
+                         // 嗜血
+                         const dmg = Math.max(1, atk - def);
+                         const drain = Math.floor(dmg * sk.drainMult);
+                         attacker.hp = Math.min(attacker.maxHp, attacker.hp + drain);
+                         multiplier = 1; // 正常伤害
+                         if(onLog) onLog(`${sk.name} 吸取 ${drain} 生命`);
+                    } else if (sk.type === 'passive') {
+                        // 被动已在 engine 处理
                     } else {
                         multiplier *= sk.dmgMult;
-                        if(onLog) onLog(`${sk.name} 触发！伤害翻倍！`);
+                        if(onLog) onLog(`${sk.name} 暴击！`);
                     }
                 }
             });
@@ -37,7 +45,7 @@ const Battle = {
         let currentEnemyHp = enemy.hp || 100;
         let maxEnemyHp = enemy.hp || 100;
 
-        // 强制刷新一次UI，防止NaN
+        // 初始刷新
         if(window.Game) Game.updateUI();
 
         this.intervalId = setInterval(() => {
@@ -55,7 +63,7 @@ const Battle = {
             let eDmg = this.calcDmg(enemy, player, null, null);
             player.hp -= eDmg;
             
-            // 核心：每回合刷新UI
+            // 核心：强制刷新UI，修复血条不动
             if(window.Game) Game.updateUI();
 
             if (player.hp <= 0) {
