@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>万古仙途：魔晶降世</title>
+    <title>万古仙途：道法自然</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,14 +13,15 @@
             <button onclick="Game.toggleCharacterPanel()">👤 角色/背包</button>
             <div class="currency">
                 灵石: <span id="val-money" style="color:#fff">0</span> | 
-                名望: <span id="val-rep" style="color:var(--rare-blue)">0</span>
+                名望: <span id="val-rep" style="color:var(--rare-blue)">0</span> |
+                道韵: <span id="val-daoyun" style="color:var(--rare-blue)">0</span>
             </div>
         </div>
 
         <header>
             <h1 id="realm-title">凡人</h1>
             <div class="stats-grid">
-                <div>❤️ 生命: <span id="val-hp">0</span>/<span id="val-max-hp">0</span></div>
+                <div>❤️ 生命: <span id="val-hp">0</span> / <span id="val-max-hp">0</span></div>
                 <div>⚔️ 攻击: <span id="val-atk">0</span></div>
                 <div>🛡️ 防御: <span id="val-def">0</span></div>
                 <div class="full-width">
@@ -31,7 +32,7 @@
         </header>
 
         <div id="log-container">
-            <div class="log-entry log-system">修仙之路漫漫...</div>
+            <div class="log-entry log-system">道生一，一生二，二生三...</div>
         </div>
 
         <div id="map-controls">
@@ -44,9 +45,7 @@
         
         <div id="enemy-panel">
             正在与 <span id="enemy-name" style="color: #ff5252;">虚空</span> 交战...
-            <div class="hp-bar">
-                <div id="enemy-hp-bar"></div>
-            </div>
+            <div class="hp-bar"><div id="enemy-hp-bar"></div></div>
         </div>
     </div>
 
@@ -71,7 +70,7 @@
                 </div>
 
                 <div style="margin-top:10px; border-top:1px solid #444; padding-top:5px;">
-                    <div style="font-size:0.9em; color:var(--rare-blue); margin-bottom:5px;">已修习功法:</div>
+                    <div style="font-size:0.9em; color:var(--rare-blue); margin-bottom:5px;">已修习功法 (点击切换):</div>
                     <div id="skill-list-display" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
                 </div>
             </div>
@@ -87,10 +86,7 @@
     </div>
 
     <div id="sect-panel" class="modal hidden">
-        <div class="panel-header">
-            <h2>宗门大殿</h2>
-            <button onclick="document.getElementById('sect-panel').classList.add('hidden')">离开</button>
-        </div>
+        <div class="panel-header"><h2>宗门大殿</h2><button onclick="document.getElementById('sect-panel').classList.add('hidden')">离开</button></div>
         <div id="sect-info" style="margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:15px;"></div>
         <div id="sect-shop"></div>
     </div>
