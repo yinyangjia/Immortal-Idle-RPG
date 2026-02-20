@@ -1,28 +1,35 @@
 import { SaveSystem } from './systems/save.js';
 import { UISystem } from './systems/ui.js';
 import { CultivationSystem } from './systems/cultivation.js';
+import { BattleSystem } from './systems/battle.js';
 
 class GameEngine {
     constructor() {
         this.config = null;
+        this.monsterData = null; // 新增怪物数据容器
         this.state = null;
         this.loopTimer = null;
     }
 
     async init() {
         try {
-            const response = await fetch('./data/data.json');
-            this.config = await response.json();
+            // 并行加载基础配置与怪物数据
+            const [configRes, monsterRes] = await Promise.all([
+                fetch('./data/data.json'),
+                fetch('./data/monsters.json')
+            ]);
+            
+            this.config = await configRes.json();
+            this.monsterData = await monsterRes.json();
+            
             this.state = SaveSystem.load(this.config);
 
             UISystem.init(this.config);
             UISystem.render(this.state);
             this.bindEvents();
 
-            // 启动游戏主循环 (每 1000ms 一次 tick)
             this.startGameLoop();
-
-            UISystem.log("灵气感应中，自动修行已开启...");
+            UISystem.log("战斗系统加载完毕，自动搜索对手中...");
         } catch (error) {
             console.error("引擎初始化失败:", error);
         }
@@ -32,10 +39,13 @@ class GameEngine {
         if (this.loopTimer) clearInterval(this.loopTimer);
         
         this.loopTimer = setInterval(() => {
-            // 执行修行逻辑
+            // 1. 修行逻辑（每秒加修为）
             CultivationSystem.tick(this.state, this.config);
             
-            // 更新 UI
+            // 2. 战斗逻辑（每秒进行一次攻击结算）
+            BattleSystem.tick(this.state, this.config, this.monsterData);
+            
+            // 3. 统一渲染
             UISystem.render(this.state);
         }, 1000);
     }
@@ -45,7 +55,6 @@ class GameEngine {
             SaveSystem.save(this.state, this.config.gameInfo.saveKey);
             UISystem.log(this.config.strings.saveSuccess);
         };
-
         document.getElementById('reset-btn').onclick = () => {
             if (confirm(this.config.strings.resetConfirm)) {
                 SaveSystem.clear(this.config.gameInfo.saveKey);
