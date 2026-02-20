@@ -17,16 +17,20 @@
         </header>
 
         <main class="game-layout">
-            <section id="player-panel" class="panel">
-                <h2>角色状态</h2>
-                <div class="stat-row">境界: <span id="p-rank">-</span></div>
-                <div class="stat-row">修为: <span id="p-exp">0</span> / <span id="p-next">0</span></div>
-                <div class="progress-container">
-                    <div id="p-exp-bar" class="progress-bar"></div>
-                    <div class="stat-row">攻击: <span id="p-atk">0</span></div>
-                </div>
-                <div class="stat-row">灵石: <span id="p-gold">0</span></div>
-            </section>
+        <section id="player-panel" class="panel">
+        <h2>角色状态</h2>
+            <div class="stat-row">境界: <span id="p-rank">-</span></div>
+            <div class="stat-row">生命: <span id="p-hp">0</span> / <span id="p-max-hp">0</span></div>
+            <div class="progress-container">
+                <div id="p-hp-bar" class="progress-bar" style="background: #c0392b;"></div>
+            </div>
+            <div class="stat-row">攻击: <span id="p-atk">0</span></div>
+            <div class="stat-row">修为: <span id="p-exp">0</span> / <span id="p-next">0</span></div>
+            <div class="progress-container">
+                <div id="p-exp-bar" class="progress-bar" style="background: #27ae60;"></div>
+            </div>
+            <div class="stat-row">灵石: <span id="p-gold">0</span></div>
+        </section>
 
             <section id="battle-panel" class="panel">
                 <h2>当前对手</h2>
