@@ -7,7 +7,7 @@ import { UISystem } from './ui.js';
 export const BattleSystem = {
     currentMonster: null,
     currentHp: 0,
-    isInitialised: false,
+    isResting: false,
 
     /**
      * 初始化战斗：从区域中随机抽取一个怪物
@@ -28,27 +28,94 @@ export const BattleSystem = {
     /**
      * 战斗心跳：由 core.js 每秒触发
      */
-tick(state, config, monsterData) {
+import { UISystem } from './ui.js';
+
+export const BattleSystem = {
+    currentMonster: null,
+    currentHp: 0,
+    isResting: false, // 战败调息状态
+
+    tick(state, config, monsterData) {
+        if (this.isResting) {
+            this.handleResting(state);
+            return;
+        }
+
         if (!this.currentMonster) {
-        this.setupMonster(config, monsterData);
-        return;
-    }
+            this.setupMonster(config, monsterData);
+            return;
+        }
 
-        // 1. 玩家攻击怪物 (基础逻辑：玩家每次攻击造成 10 点固定伤害，后续可接入 state.atk)
-        const damage = state.atk || 5; 
-        this.currentHp -= damage;
-        
-        // 更新 UI 血条
-        const hpPercent = Math.max((this.currentHp / this.currentMonster.hp) * 100, 0);
-        document.getElementById('m-hp-bar').style.width = `${hpPercent}%`;
-        document.getElementById('m-hp').textContent = Math.max(this.currentHp, 0);
+        // 1. 玩家攻击怪物
+        const playerDamage = state.atk || 5;
+        this.currentHp -= playerDamage;
 
-        // 2. 检查怪物死亡
+        // 2. 怪物反击玩家
+        const monsterDamage = this.currentMonster.atk || 1;
+        state.hp -= monsterDamage;
+
+        // 3. 检查战败 (玩家死亡)
+        if (state.hp <= 0) {
+            this.defeat(state, config);
+            return;
+        }
+
+        // 4. 检查胜利 (怪物死亡)
         if (this.currentHp <= 0) {
-            this.victory(state, config, monsterData);
+            this.victory(state);
+        }
+        
+        // 更新怪物血条 UI (代码略，同 V1.3.0)
+    },
+
+    defeat(state, config) {
+        UISystem.log(config.strings.defeat);
+        state.hp = 0;
+        this.currentMonster = null; // 丢失当前对手
+        this.isResting = true;
+    },
+
+    handleResting(state) {
+        // 调息逻辑：每秒恢复 10% 的生命值
+        const recover = state.maxHp * 0.1;
+        state.hp += recover;
+        if (state.hp >= state.maxHp) {
+            state.hp = state.maxHp;
+            this.isResting = false;
+            UISystem.log("伤势痊愈，重新开始修行。");
         }
     },
 
+
+    defeat(state, config) {
+        UISystem.log(config.strings.defeat);
+        state.hp = 0;
+        this.currentMonster = null; // 丢失当前对手
+        this.isResting = true;
+    },
+
+    handleResting(state) {
+        // 调息逻辑：每秒恢复 10% 的生命值
+        const recover = state.maxHp * 0.1;
+        state.hp += recover;
+        if (state.hp >= state.maxHp) {
+            state.hp = state.maxHp;
+            this.isResting = false;
+            UISystem.log("伤势痊愈，重新开始修行。");
+        }
+    },
+    
+    victory(state) {
+        const rewardExp = this.currentMonster.expGain;
+        const rewardGold = this.currentMonster.goldGain;
+        state.exp += rewardExp;
+        state.gold += rewardGold;
+        UISystem.log(`击败了【${this.currentMonster.name}】，获得修为+${rewardExp}`);
+        this.currentMonster = null;
+    },
+    
+    // setupMonster 函数保持不变...
+};
     /**
      * 战斗胜利：发放奖励并重置战斗
      */
