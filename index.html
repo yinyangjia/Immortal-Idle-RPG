@@ -13,7 +13,7 @@
             <div class="currency">
                 灵石: <span id="val-money" style="color:#fff">0</span> | 
                 名望: <span id="val-rep" style="color:var(--rare-blue)">0</span> |
-                道韵: <span id="val-daoyun" style="color:var(--accent-gold)">0</span>
+                道韵: <span id="val-daoyun" style="color:var(--rare-blue)">0</span>
             </div>
         </div>
         <header>
@@ -26,7 +26,7 @@
             </div>
             <button id="btn-breakthrough" onclick="Game.breakthrough()">⚡ 尝试突破瓶颈 ⚡</button>
         </header>
-        <div id="log-container"></div>
+        <div id="log-container"><div class="log-entry log-system">道生一，一生二...</div></div>
         <div id="map-controls">
             <button class="map-btn active" onclick="Game.switchMap('field')">🌲 野外挂机</button>
             <button class="map-btn" onclick="Game.switchMap('boss')">👹 挑战首领</button>
@@ -39,10 +39,9 @@
             <div class="hp-bar"><div id="enemy-hp-bar"></div></div>
         </div>
     </div>
-
-    <div id="character-panel" class="modal hidden">
+    <div id="character-panel" class="modal hidden full-screen">
         <div class="panel-header"><h2>道友法身</h2><button onclick="Game.toggleCharacterPanel()">关闭</button></div>
-        <div class="panel-split">
+        <div class="panel-split" style="flex:1; overflow:hidden; display:flex;">
             <div class="equip-col">
                 <div id="slot-weapon" class="slot" onclick="Game.unequip('weapon')">武器: 空</div>
                 <div id="slot-head" class="slot" onclick="Game.unequip('head')">头饰: 空</div>
@@ -51,33 +50,31 @@
                 <div id="slot-pants" class="slot" onclick="Game.unequip('pants')">裤子: 空</div>
                 <div id="slot-shoes" class="slot" onclick="Game.unequip('shoes')">鞋子: 空</div>
                 <div id="slot-ornament" class="slot" onclick="Game.unequip('ornament')">装饰: 空</div>
-                <div class="mini-stats">总攻:<span id="detail-atk">0</span> 总防:<span id="detail-def">0</span> 总血:<span id="detail-hp">0</span></div>
-                <div id="skill-list-display"></div>
+                <div style="margin-top:10px; font-size:0.8em; color:#aaa; text-align:center;">总攻:<span id="detail-atk">0</span> 总防:<span id="detail-def">0</span> 总血:<span id="detail-hp">0</span></div>
+                <div style="margin-top:10px; border-top:1px solid #444; padding-top:5px;">
+                    <div style="font-size:0.85em; color:var(--rare-blue); margin-bottom:5px;">已装备功法 (点击卸载):</div>
+                    <div id="skill-list-display" style="display:flex; flex-wrap:wrap; gap:4px;"></div>
+                </div>
             </div>
             <div class="bag-col">
-                <div class="bag-header"><h3>储物袋</h3><button onclick="Game.synthesizeAll()">🔥 一键合成</button></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><h3>储物袋</h3><button onclick="Game.synthesizeAll()" style="padding:4px 8px; background:var(--accent-gold); color:#000; border:none; font-weight:bold; font-size:0.8em;">🔥 一键合成</button></div>
                 <div id="inventory-grid"></div>
             </div>
         </div>
     </div>
-
-    <div id="monster-selector" class="modal hidden">
-        <div class="panel-header"><h2 id="selector-title">列表</h2></div>
-        <div id="monster-list"></div>
-        <div class="modal-footer"><button class="btn-close-modal" onclick="document.getElementById('monster-selector').classList.add('hidden')">关闭列表</button></div>
-    </div>
-
     <div id="sect-panel" class="modal hidden">
         <div class="panel-header"><h2>宗门大殿</h2></div>
-        <div id="sect-content" class="panel-content-scroll">
-            <div id="sect-info"></div>
+        <div class="panel-content">
+            <div id="sect-info" style="margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:15px;"></div>
             <div id="sect-shop"></div>
         </div>
         <div class="modal-footer"><button class="btn-close-modal" onclick="document.getElementById('sect-panel').classList.add('hidden')">离开大殿</button></div>
     </div>
-
-    <script src="js/data.js"></script>
-    <script src="js/battle.js"></script>
-    <script src="js/engine.js"></script>
+    <div id="monster-selector" class="modal hidden">
+        <div class="panel-header"><h2 id="selector-title" style="color:var(--accent-gold)">列表</h2></div>
+        <div id="monster-list"></div>
+        <div class="modal-footer"><button class="btn-close-modal" onclick="document.getElementById('monster-selector').classList.add('hidden')">关闭列表</button></div>
+    </div>
+    <script src="js/data.js"></script><script src="js/battle.js"></script><script src="js/engine.js"></script>
 </body>
 </html>
