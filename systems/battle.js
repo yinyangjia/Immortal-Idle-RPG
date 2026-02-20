@@ -1,8 +1,8 @@
 import { UISystem } from './ui.js';
 
 /**
- * BattleSystem - 战斗核心模块 (V1.5.2)
- * 职责：处理回合制伤害结算、怪物AI反击、战败调息及奖励分发。
+ * BattleSystem - 战斗核心模块 (V1.5.3)
+ * 职责：处理回合制伤害、怪物生成及战败调息。
  */
 export const BattleSystem = {
     currentMonster: null,
@@ -11,9 +11,6 @@ export const BattleSystem = {
 
     /**
      * 战斗主循环
-     * @param {Object} state - 玩家实时状态
-     * @param {Object} config - 全局配置 (data.json)
-     * @param {Object} monsterData - 怪物数据库 (monsters.json)
      */
     tick(state, config, monsterData) {
         // 1. 战败调息判定
@@ -22,50 +19,60 @@ export const BattleSystem = {
             return;
         }
 
-        // 2. 怪物生成判定 (对应原 31 行报错位置)
+        // 2. 怪物生成判定
         if (!this.currentMonster) {
-            this.setupMonster(config, monsterMonsterData(monsterData));
+            this.setupMonster(config, monsterData);
             return;
         }
 
-        // 3. 玩家回合：造成伤害 (基于 state.atk)
+        // 3. 双方伤害结算
         const playerDamage = state.atk || 5;
+        const monsterDamage = this.currentMonster.atk || 1;
+
         this.currentHp -= playerDamage;
+        state.hp -= monsterDamage;
 
-        // 4. 怪物回合：反击玩家
-        const monsterAtk = this.currentMonster.atk || 1;
-        state.hp -= monsterAtk;
-
-        // 5. 判定玩家是否战败
+        // 4. 判定结果
         if (state.hp <= 0) {
             this.defeat(state, config);
-            return;
-        }
-
-        // 6. 判定怪物是否死亡 (胜利结算)
-        if (this.currentHp <= 0) {
+        } else if (this.currentHp <= 0) {
             this.victory(state);
         } else {
-            // 战斗进行中：仅更新怪物血条 UI
-            const hpPercent = Math.max((this.currentHp / (this.currentMonster.maxHp || this.currentMonster.hp)) * 100, 0);
-            const bar = document.getElementById('m-hp-bar');
-            if (bar) bar.style.width = `${hpPercent}%`;
-            const hpText = document.getElementById('m-hp');
-            if (hpText) hpText.textContent = Math.max(Math.floor(this.currentHp), 0);
+            this.updateBattleUI();
         }
     },
 
-    setupMonster(config, monsterList) {
-        const randomIndex = Math.floor(Math.random() * monsterList.length);
-        const template = monsterList[randomIndex];
+    /**
+     * 内部方法：从 monsters.json 数据中随机选择一只怪物
+     */
+    setupMonster(config, monsterData) {
+        if (!monsterData || !monsterData.zones) return;
 
-        // 核心：使用深拷贝确保不污染原始数据
+        // 合并所有区域的怪物
+        let allMonsters = [];
+        monsterData.zones.forEach(zone => {
+            allMonsters = allMonsters.concat(zone.monsters);
+        });
+
+        const randomIndex = Math.floor(Math.random() * allMonsters.length);
+        const template = allMonsters[randomIndex];
+
+        // 深拷贝并初始化战斗状态
         this.currentMonster = JSON.parse(JSON.stringify(template));
-        this.currentMonster.maxHp = this.currentMonster.hp; // 记录初始血量用于计算进度条
+        this.currentMonster.maxHp = this.currentMonster.hp;
         this.currentHp = this.currentMonster.hp;
 
         UISystem.renderMonster(this.currentMonster);
         UISystem.log(`在草丛中遇到一只【${this.currentMonster.name}】！`);
+    },
+
+    updateBattleUI() {
+        const hpPercent = Math.max((this.currentHp / this.currentMonster.maxHp) * 100, 0);
+        const bar = document.getElementById('m-hp-bar');
+        const hpText = document.getElementById('m-hp');
+        
+        if (bar) bar.style.width = `${hpPercent}%`;
+        if (hpText) hpText.textContent = Math.max(Math.floor(this.currentHp), 0);
     },
 
     victory(state) {
@@ -76,7 +83,7 @@ export const BattleSystem = {
         state.gold += goldGain;
 
         UISystem.log(`击败【${this.currentMonster.name}】，修为+${expGain}，灵石+${goldGain}`);
-        this.currentMonster = null; // 清空当前对手，等待下一轮 tick 寻找新怪
+        this.currentMonster = null;
     },
 
     defeat(state, config) {
@@ -87,7 +94,6 @@ export const BattleSystem = {
     },
 
     handleResting(state) {
-        // 每秒恢复 10% 最大生命值
         const heal = state.maxHp * 0.1;
         state.hp = Math.min(state.hp + heal, state.maxHp);
 
@@ -97,14 +103,3 @@ export const BattleSystem = {
         }
     }
 };
-
-/**
- * 辅助工具：提取所有区域的怪物列表
- */
-function monsterMonsterData(monsterData) {
-    let allMonsters = [];
-    monsterData.zones.forEach(zone => {
-        allMonsters = allMonsters.concat(zone.monsters);
-    });
-    return allMonsters;
-}
