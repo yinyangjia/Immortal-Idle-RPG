@@ -1,7 +1,7 @@
 {
     "gameInfo": {
         "title": "Immortal Idle RPG",
-        "version": "1.4.0",
+        "version": "1.5.0",
         "saveKey": "ImmortalIdle_Save_V1"
     },
     "initialPlayerState": {
@@ -10,18 +10,21 @@
         "exp": 0,
         "nextLevelExp": 100,
         "gold": 0,
-        "atk": 5, 
+        "atk": 5,
+        "hp": 50,
+        "maxHp": 50,
         "inventory": [],
         "lastUpdate": 0
     },
     "ranks": [
-        {"name": "凡人", "requirement": 0, "baseAtk": 5},
-        {"name": "炼气", "requirement": 100, "baseAtk": 15},
-        {"name": "筑基", "requirement": 500, "baseAtk": 50},
-        {"name": "金丹", "requirement": 2000, "baseAtk": 200}
+        {"name": "凡人", "requirement": 0, "baseAtk": 5, "baseHp": 50},
+        {"name": "炼气", "requirement": 100, "baseAtk": 15, "baseHp": 150},
+        {"name": "筑基", "requirement": 500, "baseAtk": 50, "baseHp": 600},
+        {"name": "金丹", "requirement": 2000, "baseAtk": 200, "baseHp": 3000}
     ],
     "strings": {
         "saveSuccess": "神识已记录当前修为",
-        "resetConfirm": "确定要斩断尘缘吗？"
+        "resetConfirm": "确定要斩断尘缘吗？",
+        "defeat": "【战败】你身负重伤，不得不打坐调息..."
     }
 }
