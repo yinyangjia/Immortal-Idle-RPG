@@ -27,6 +27,21 @@
                 <div class="stat-row">灵石: <span id="p-gold">0</span></div>
             </section>
 
+            <section id="battle-panel" class="panel">
+                <h2>当前对手</h2>
+                <div id="monster-info">
+                    <div class="stat-row">名称: <span id="m-name">寻找对手中...</span></div>
+                    <div class="stat-row">生命: <span id="m-hp">-</span> / <span id="m-max-hp">-</span></div>
+                    <div class="progress-container">
+                    <div id="m-hp-bar" class="progress-bar" style="background: #e74c3c;"></div>
+                </div>
+                <p id="m-desc" style="font-style: italic; color: #888;"></p>
+                </div>
+                <div class="battle-actions">
+                <button id="battle-btn" disabled>开始讨伐</button>
+                </div>
+            </section>
+            
             <section id="action-panel" class="panel">
                 <h2>修行记录</h2>
                 <div id="game-logs" class="log-container"></div>
