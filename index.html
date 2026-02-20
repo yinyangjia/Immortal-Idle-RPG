@@ -2,79 +2,38 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>万古仙途：天道酬勤</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immortal Idle RPG</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="game-container">
-        <div id="top-bar">
-            <button onclick="Game.toggleCharacterPanel()">👤 角色/背包</button>
-            <div class="currency">
-                灵石: <span id="val-money" style="color:#fff">0</span> | 
-                名望: <span id="val-rep" style="color:var(--rare-blue)">0</span> |
-                道韵: <span id="val-daoyun" style="color:var(--rare-blue)">0</span>
-            </div>
-        </div>
+    <div id="game-app">
         <header>
-            <h1 id="realm-title">凡人</h1>
-            <div class="stats-grid">
-                <div>❤️ 生命: <span id="val-hp">0</span> / <span id="val-max-hp">0</span></div>
-                <div>⚔️ 攻击: <span id="val-atk">0</span></div>
-                <div>🛡️ 防御: <span id="val-def">0</span></div>
-                <div class="full-width">✨ 修为: <span id="val-exp">0</span> / <span id="val-max-exp">0</span></div>
+            <h1 id="game-title">加载中...</h1>
+            <div class="save-bar">
+                <button id="save-btn">保存进度</button>
+                <button id="reset-btn">清空存档</button>
             </div>
-            <button id="btn-breakthrough" onclick="Game.breakthrough()">⚡ 尝试突破瓶颈 ⚡</button>
         </header>
-        <div id="log-container"><div class="log-entry log-system">道生一，一生二...</div></div>
-        <div id="map-controls">
-            <button class="map-btn active" onclick="Game.switchMap('field')">🌲 野外挂机</button>
-            <button class="map-btn" onclick="Game.switchMap('boss')">👹 挑战首领</button>
-            <button class="map-btn" onclick="Game.switchMap('tower')">🗼 镇妖塔 (<span id="tower-floor">1</span>)</button>
-            <button class="map-btn" onclick="Game.switchMap('sect')" style="color:var(--rare-blue); border-color:var(--rare-blue)">🏔️ 门派</button>
-            <button class="map-btn" onclick="Game.switchMap('shop')" style="color:var(--accent-gold); border-color:var(--accent-gold)">💰 万宝阁</button>
-        </div>
-        <div id="enemy-panel">
-            正在与 <span id="enemy-name" style="color: #ff5252;">虚空</span> 交战...
-            <div class="hp-bar"><div id="enemy-hp-bar"></div></div>
-        </div>
-    </div>
-    <div id="character-panel" class="modal hidden full-screen">
-        <div class="panel-header"><h2>道友法身</h2><button onclick="Game.toggleCharacterPanel()">关闭</button></div>
-        <div class="panel-split" style="flex:1; overflow:hidden; display:flex;">
-            <div class="equip-col">
-                <div id="slot-weapon" class="slot" onclick="Game.unequip('weapon')">武器: 空</div>
-                <div id="slot-head" class="slot" onclick="Game.unequip('head')">头饰: 空</div>
-                <div id="slot-body" class="slot" onclick="Game.unequip('body')">防具: 空</div>
-                <div id="slot-neck" class="slot" onclick="Game.unequip('neck')">项链: 空</div>
-                <div id="slot-pants" class="slot" onclick="Game.unequip('pants')">裤子: 空</div>
-                <div id="slot-shoes" class="slot" onclick="Game.unequip('shoes')">鞋子: 空</div>
-                <div id="slot-ornament" class="slot" onclick="Game.unequip('ornament')">装饰: 空</div>
-                <div style="margin-top:10px; font-size:0.8em; color:#aaa; text-align:center;">总攻:<span id="detail-atk">0</span> 总防:<span id="detail-def">0</span> 总血:<span id="detail-hp">0</span></div>
-                <div style="margin-top:10px; border-top:1px solid #444; padding-top:5px;">
-                    <div style="font-size:0.85em; color:var(--rare-blue); margin-bottom:5px;">已装备功法 (点击卸载):</div>
-                    <div id="skill-list-display" style="display:flex; flex-wrap:wrap; gap:4px;"></div>
+
+        <main class="game-layout">
+            <section id="player-panel" class="panel">
+                <h2>角色状态</h2>
+                <div class="stat-row">境界: <span id="p-rank">-</span></div>
+                <div class="stat-row">修为: <span id="p-exp">0</span> / <span id="p-next">0</span></div>
+                <div class="progress-container">
+                    <div id="p-exp-bar" class="progress-bar"></div>
                 </div>
-            </div>
-            <div class="bag-col">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;"><h3>储物袋</h3><button onclick="Game.synthesizeAll()" style="padding:4px 8px; background:var(--accent-gold); color:#000; border:none; font-weight:bold; font-size:0.8em;">🔥 一键合成</button></div>
-                <div id="inventory-grid"></div>
-            </div>
-        </div>
+                <div class="stat-row">灵石: <span id="p-gold">0</span></div>
+            </section>
+
+            <section id="action-panel" class="panel">
+                <h2>修行记录</h2>
+                <div id="game-logs" class="log-container"></div>
+            </section>
+        </main>
     </div>
-    <div id="sect-panel" class="modal hidden">
-        <div class="panel-header"><h2>宗门大殿</h2></div>
-        <div class="panel-content">
-            <div id="sect-info" style="margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:15px;"></div>
-            <div id="sect-shop"></div>
-        </div>
-        <div class="modal-footer"><button class="btn-close-modal" onclick="document.getElementById('sect-panel').classList.add('hidden')">离开大殿</button></div>
-    </div>
-    <div id="monster-selector" class="modal hidden">
-        <div class="panel-header"><h2 id="selector-title" style="color:var(--accent-gold)">列表</h2></div>
-        <div id="monster-list"></div>
-        <div class="modal-footer"><button class="btn-close-modal" onclick="document.getElementById('monster-selector').classList.add('hidden')">关闭列表</button></div>
-    </div>
-    <script src="js/data.js"></script><script src="js/battle.js"></script><script src="js/engine.js"></script>
+
+    <script type="module" src="core.js"></script>
 </body>
 </html>
