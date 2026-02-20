@@ -1,8 +1,8 @@
 import { UISystem } from './ui.js';
 
 /**
- * BattleSystem - 战斗核心
- * 职责：处理战斗状态机、伤害结算与奖励掉落
+ * BattleSystem - 战斗核心模块 (V1.5.2)
+ * 职责：处理回合制伤害结算、怪物AI反击、战败调息及奖励分发。
  */
 export const BattleSystem = {
     currentMonster: null,
@@ -10,125 +10,101 @@ export const BattleSystem = {
     isResting: false,
 
     /**
-     * 初始化战斗：从区域中随机抽取一个怪物
+     * 战斗主循环
+     * @param {Object} state - 玩家实时状态
+     * @param {Object} config - 全局配置 (data.json)
+     * @param {Object} monsterData - 怪物数据库 (monsters.json)
      */
-    setupMonster(config, monsterData) {
-        const zone = monsterData.zones[0]; // 默认第一个区域
-        const randomIndex = Math.floor(Math.random() * zone.monsters.length);
-        const monsterTemplate = zone.monsters[randomIndex];
-
-        // 深拷贝怪物数据，防止修改原始 JSON
-        this.currentMonster = JSON.parse(JSON.stringify(monsterTemplate));
-        this.currentHp = this.currentMonster.hp;
-        
-        UISystem.renderMonster(this.currentMonster);
-        UISystem.log(`遇到了一只【${this.currentMonster.name}】，战斗开始！`);
-    },
-
-    /**
-     * 战斗心跳：由 core.js 每秒触发
-     */
-import { UISystem } from './ui.js';
-
-export const BattleSystem = {
-    currentMonster: null,
-    currentHp: 0,
-    isResting: false, // 战败调息状态
-
     tick(state, config, monsterData) {
+        // 1. 战败调息判定
         if (this.isResting) {
             this.handleResting(state);
             return;
         }
 
+        // 2. 怪物生成判定 (对应原 31 行报错位置)
         if (!this.currentMonster) {
-            this.setupMonster(config, monsterData);
+            this.setupMonster(config, monsterMonsterData(monsterData));
             return;
         }
 
-        // 1. 玩家攻击怪物
+        // 3. 玩家回合：造成伤害 (基于 state.atk)
         const playerDamage = state.atk || 5;
         this.currentHp -= playerDamage;
 
-        // 2. 怪物反击玩家
-        const monsterDamage = this.currentMonster.atk || 1;
-        state.hp -= monsterDamage;
+        // 4. 怪物回合：反击玩家
+        const monsterAtk = this.currentMonster.atk || 1;
+        state.hp -= monsterAtk;
 
-        // 3. 检查战败 (玩家死亡)
+        // 5. 判定玩家是否战败
         if (state.hp <= 0) {
             this.defeat(state, config);
             return;
         }
 
-        // 4. 检查胜利 (怪物死亡)
+        // 6. 判定怪物是否死亡 (胜利结算)
         if (this.currentHp <= 0) {
             this.victory(state);
-        }
-        
-        // 更新怪物血条 UI (代码略，同 V1.3.0)
-    },
-
-    defeat(state, config) {
-        UISystem.log(config.strings.defeat);
-        state.hp = 0;
-        this.currentMonster = null; // 丢失当前对手
-        this.isResting = true;
-    },
-
-    handleResting(state) {
-        // 调息逻辑：每秒恢复 10% 的生命值
-        const recover = state.maxHp * 0.1;
-        state.hp += recover;
-        if (state.hp >= state.maxHp) {
-            state.hp = state.maxHp;
-            this.isResting = false;
-            UISystem.log("伤势痊愈，重新开始修行。");
+        } else {
+            // 战斗进行中：仅更新怪物血条 UI
+            const hpPercent = Math.max((this.currentHp / (this.currentMonster.maxHp || this.currentMonster.hp)) * 100, 0);
+            const bar = document.getElementById('m-hp-bar');
+            if (bar) bar.style.width = `${hpPercent}%`;
+            const hpText = document.getElementById('m-hp');
+            if (hpText) hpText.textContent = Math.max(Math.floor(this.currentHp), 0);
         }
     },
 
+    setupMonster(config, monsterList) {
+        const randomIndex = Math.floor(Math.random() * monsterList.length);
+        const template = monsterList[randomIndex];
 
-    defeat(state, config) {
-        UISystem.log(config.strings.defeat);
-        state.hp = 0;
-        this.currentMonster = null; // 丢失当前对手
-        this.isResting = true;
+        // 核心：使用深拷贝确保不污染原始数据
+        this.currentMonster = JSON.parse(JSON.stringify(template));
+        this.currentMonster.maxHp = this.currentMonster.hp; // 记录初始血量用于计算进度条
+        this.currentHp = this.currentMonster.hp;
+
+        UISystem.renderMonster(this.currentMonster);
+        UISystem.log(`在草丛中遇到一只【${this.currentMonster.name}】！`);
     },
 
-    handleResting(state) {
-        // 调息逻辑：每秒恢复 10% 的生命值
-        const recover = state.maxHp * 0.1;
-        state.hp += recover;
-        if (state.hp >= state.maxHp) {
-            state.hp = state.maxHp;
-            this.isResting = false;
-            UISystem.log("伤势痊愈，重新开始修行。");
-        }
-    },
-    
     victory(state) {
-        const rewardExp = this.currentMonster.expGain;
-        const rewardGold = this.currentMonster.goldGain;
-        state.exp += rewardExp;
-        state.gold += rewardGold;
-        UISystem.log(`击败了【${this.currentMonster.name}】，获得修为+${rewardExp}`);
-        this.currentMonster = null;
+        const expGain = this.currentMonster.expGain || 0;
+        const goldGain = this.currentMonster.goldGain || 0;
+
+        state.exp += expGain;
+        state.gold += goldGain;
+
+        UISystem.log(`击败【${this.currentMonster.name}】，修为+${expGain}，灵石+${goldGain}`);
+        this.currentMonster = null; // 清空当前对手，等待下一轮 tick 寻找新怪
     },
-    
-    // setupMonster 函数保持不变...
-};
-    /**
-     * 战斗胜利：发放奖励并重置战斗
-     */
-    victory(state, config, monsterData) {
-        const rewardExp = this.currentMonster.expGain;
-        const rewardGold = this.currentMonster.goldGain;
 
-        state.exp += rewardExp;
-        state.gold += rewardGold;
-
-        UISystem.log(`击败了【${this.currentMonster.name}】，获得修为+${rewardExp}, 灵石+${rewardGold}`);
-        
-        // 寻找下一个对手
+    defeat(state, config) {
+        state.hp = 0;
+        this.isResting = true;
         this.currentMonster = null;
+        UISystem.log(config.strings.defeat || "战败调息中...");
+    },
+
+    handleResting(state) {
+        // 每秒恢复 10% 最大生命值
+        const heal = state.maxHp * 0.1;
+        state.hp = Math.min(state.hp + heal, state.maxHp);
+
+        if (state.hp >= state.maxHp) {
+            this.isResting = false;
+            UISystem.log("伤势已痊愈，重返战场！");
+        }
     }
 };
+
+/**
+ * 辅助工具：提取所有区域的怪物列表
+ */
+function monsterMonsterData(monsterData) {
+    let allMonsters = [];
+    monsterData.zones.forEach(zone => {
+        allMonsters = allMonsters.concat(zone.monsters);
+    });
+    return allMonsters;
+}
