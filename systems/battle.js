@@ -28,15 +28,15 @@ export const BattleSystem = {
     /**
      * 战斗心跳：由 core.js 每秒触发
      */
-    tick(state, config, monsterData) {
+tick(state, config, monsterData) {
         if (!this.currentMonster) {
-            this.setupMonster(config, monsterData);
-            return;
-        }
+        this.setupMonster(config, monsterData);
+        return;
+    }
 
         // 1. 玩家攻击怪物 (基础逻辑：玩家每次攻击造成 10 点固定伤害，后续可接入 state.atk)
-        const playerAtk = 10; 
-        this.currentHp -= playerAtk;
+        const damage = state.atk || 5; 
+        this.currentHp -= damage;
         
         // 更新 UI 血条
         const hpPercent = Math.max((this.currentHp / this.currentMonster.hp) * 100, 0);
