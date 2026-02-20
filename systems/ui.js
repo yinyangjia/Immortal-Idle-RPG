@@ -10,7 +10,11 @@ export const UISystem = {
             expBar: document.getElementById('p-exp-bar'),
             gold: document.getElementById('p-gold'),
             logs: document.getElementById('game-logs'),
-            // 新增战斗元素
+            rank: document.getElementById('p-rank'),
+            exp: document.getElementById('p-exp'),
+            next: document.getElementById('p-next'),
+            gold: document.getElementById('p-gold'),
+            atk: document.getElementById('p-atk'), 
             mName: document.getElementById('m-name'),
             mHp: document.getElementById('m-hp'),
             mMaxHp: document.getElementById('m-max-hp'),
@@ -22,14 +26,14 @@ export const UISystem = {
     },
 
     render(state) {
-        const { rank, exp, nextLevelExp, gold } = state;
-        this.elements.rank.textContent = rank;
-        this.elements.exp.textContent = exp;
-        this.elements.next.textContent = nextLevelExp;
-        this.elements.gold.textContent = gold;
-        const percent = Math.min((exp / nextLevelExp) * 100, 100);
-        this.elements.expBar.style.width = `${percent}%`;
-    },
+        this.elements.rank.textContent = state.rank;
+        this.elements.exp.textContent = state.exp;
+        this.elements.next.textContent = state.nextLevelExp;
+        this.elements.gold.textContent = state.gold;
+        this.elements.atk.textContent = state.atk; // 新增：同步攻击力数值
+        const percent = Math.min((state.exp / state.nextLevelExp) * 100, 100);
+        document.getElementById('p-exp-bar').style.width = `${percent}%`;
+}
 
     /**
      * 渲染怪物信息
