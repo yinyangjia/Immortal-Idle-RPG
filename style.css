@@ -83,6 +83,8 @@ button {
     border-radius: 4px;
     cursor: pointer;
 }
+button:hover { background: #555; 
+             
 /* 法宝容器 */
 .artifact-card {
     background: rgba(0, 0, 0, 0.4);
@@ -117,5 +119,4 @@ button {
     animation: rainbow-text 3s linear infinite;
 }
 
-@keyframes rainbow-text { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-button:hover { background: #555; }
+@keyframes rainbow-text { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }            
