@@ -19,17 +19,18 @@ export const BattleSystem = {
         if (state.hp <= 0) return this.defeat(state, config);
         if (this.currentHp <= 0) return this.victory(state, zoneData);
 
-        // 修复：使用显式引用防止 this 指向 null
+        // 核心修复：使用 BattleSystem 而非 this 确保在 setInterval 中指向正确
         BattleSystem.updateUI();
     },
 
     setupMonster: function(state, zoneData) {
+        if (!zoneData || !zoneData.idleZones) return;
         let m = null;
         const mode = state.currentMode || 'idle';
 
         if (mode === 'idle') {
-            // 根据当前选择的 ZoneID 寻找怪物
             const zone = zoneData.idleZones.find(z => z.id === (state.currentZoneId || 'idle_01'));
+            if(!zone) return;
             m = JSON.parse(JSON.stringify(zone.monsters[0]));
         } else if (mode === 'tower') {
             const floor = state.towerFloor || 1;
@@ -51,30 +52,25 @@ export const BattleSystem = {
         UISystem.renderMonster(this.currentMonster);
     },
 
+    updateUI: function() {
+        if (!this.currentMonster) return;
+        const percent = Math.max((this.currentHp / this.currentMonster.maxHp) * 100, 0);
+        const bar = document.getElementById('m-hp-bar');
+        const hpText = document.getElementById('m-hp');
+        if (bar) bar.style.width = percent + "%";
+        if (hpText) hpText.textContent = Math.max(0, Math.floor(this.currentHp));
+    },
+
     victory: function(state, zoneData) {
         state.exp += this.currentMonster.exp;
         state.gold += this.currentMonster.gold;
         UISystem.log(`击败【${this.currentMonster.name}】`);
 
-        // 副本解锁逻辑：如果是爬塔达到特定层数，解锁对应副本
         if (state.currentMode === 'tower') {
             state.towerFloor++;
-            // 示例：打过第 5 层解锁新地图
-            if (state.towerFloor === 5 && !state.unlockedZones.includes('idle_02')) {
-                state.unlockedZones.push('idle_02');
-                UISystem.log("✨ 镇妖塔气息外泄，【幽暗森林】副本已解锁！");
-            }
+            if (state.towerFloor % 5 === 0) UISystem.log("✨ 镇妖塔震动，更强的气息出现了！");
         }
-        
         this.currentMonster = null;
-    },
-
-    updateUI: function() {
-        const percent = Math.max((this.currentHp / this.currentMonster.maxHp) * 100, 0);
-        const bar = document.getElementById('m-hp-bar');
-        const hp = document.getElementById('m-hp');
-        if (bar) bar.style.width = percent + "%";
-        if (hp) hp.textContent = Math.max(0, Math.floor(this.currentHp));
     },
 
     defeat: function(state) {
