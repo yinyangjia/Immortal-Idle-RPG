@@ -103,36 +103,39 @@ button:hover { background: #555;
 /* 按钮状态：不可突破时置灰 */
 .btn-special:disabled { filter: grayscale(1); cursor: not-allowed; opacity: 0.5; }
 
-/* --- 品质颜色 (Quality) --- */
-.q-white { color: #ffffff !important; }
-.q-green { color: #2ecc71 !important; text-shadow: 0 0 5px rgba(46, 204, 113, 0.5); }
-.q-orange { color: #e67e22 !important; text-shadow: 0 0 8px rgba(230, 126, 34, 0.6); font-weight: bold; }
-.q-red { color: #e74c3c !important; text-shadow: 0 0 12px rgba(231, 76, 60, 0.8); font-weight: bold; animation: pulse 2s infinite; }
+/* --- 法宝专用：高优先级样式 --- */
 
-/* --- 阶位特效 (Tiers) --- */
-.tier-mortal { color: #bdc3c7 !important; } /* 凡器 */
-.tier-spirit { color: #3498db !important; text-shadow: 0 0 5px #3498db; } /* 灵器 */
-.tier-magic  { color: #9b59b6 !important; text-shadow: 0 0 5px #9b59b6; } /* 法器 */
-.tier-treasure { color: #f1c40f !important; text-shadow: 0 0 8px #f1c40f; font-weight: bold; } /* 宝器 */
-.tier-spirit-treasure { color: #1abc9c !important; text-shadow: 0 0 10px #1abc9c; } /* 灵宝 */
+/* 1. 品质颜色 (确保文字可见且带有发光感) */
+#artifact-display .q-white { color: #ffffff !important; }
+#artifact-display .q-green { color: #2ecc71 !important; text-shadow: 0 0 5px rgba(46, 204, 113, 0.8) !important; }
+#artifact-display .q-orange { color: #e67e22 !important; text-shadow: 0 0 8px rgba(230, 126, 34, 0.9) !important; font-weight: bold !important; }
+#artifact-display .q-red { color: #e74c3c !important; text-shadow: 0 0 12px rgba(231, 76, 60, 1) !important; font-weight: bold !important; animation: pulse 2s infinite !important; }
 
-/* 古宝以上使用流光动画 */
-.tier-ancient { 
-    background: linear-gradient(90deg, #f1c40f, #e67e22, #f1c40f);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: bold;
-    filter: drop-shadow(0 0 2px rgba(241, 196, 15, 0.5));
+/* 2. 阶位特效 (根据阶位提供独特的视觉背景) */
+#artifact-display .tier-mortal { color: #bdc3c7 !important; }
+#artifact-display .tier-spirit { color: #3498db !important; text-shadow: 0 0 5px #3498db !important; }
+#artifact-display .tier-magic  { color: #9b59b6 !important; text-shadow: 0 0 5px #9b59b6 !important; }
+#artifact-display .tier-treasure { color: #f1c40f !important; text-shadow: 0 0 8px #f1c40f !important; font-weight: bold !important; }
+#artifact-display .tier-spirit-treasure { color: #1abc9c !important; text-shadow: 0 0 10px #1abc9c !important; }
+
+/* 3. 高级阶位：流光字效果 (古宝/仙器) */
+#artifact-display .tier-ancient { 
+    background: linear-gradient(90deg, #f1c40f, #e67e22, #f1c40f) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: bold !important;
+    display: inline-block !important;
 }
 
-.tier-immortal {
-    background: linear-gradient(to right, #9b59b6, #3498db, #2ecc71, #f1c40f, #e74c3c);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: rainbow-text 3s linear infinite;
-    font-weight: bold;
+#artifact-display .tier-immortal {
+    background: linear-gradient(to right, #9b59b6, #3498db, #2ecc71, #f1c40f, #e74c3c) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    animation: rainbow-text 3s linear infinite !important;
+    font-weight: bold !important;
+    display: inline-block !important;
 }
 
-/* 动画定义 */
+/* 4. 辅助动画 */
 @keyframes rainbow-text { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }        
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }  
