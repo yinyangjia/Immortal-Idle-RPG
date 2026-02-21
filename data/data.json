@@ -1,10 +1,10 @@
 {
     "gameInfo": {
         "title": "Immortal Idle RPG",
-        "version": "1.5.0",
+        "version": "1.8.2",
         "saveKey": "ImmortalIdle_Save_V1"
     },
-"initialPlayerState": {
+    "initialPlayerState": {
         "rank": "凡人",
         "rankIndex": 0,
         "exp": 0,
@@ -19,7 +19,7 @@
         "unlockedZones": ["idle_01"],
         "towerFloor": 1,
         "lastUpdate": 0
-    }
+    },
     "ranks": [
         {"name": "凡人", "requirement": 0, "baseAtk": 5, "baseHp": 50},
         {"name": "炼气", "requirement": 100, "baseAtk": 15, "baseHp": 150},
