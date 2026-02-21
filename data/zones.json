@@ -1,0 +1,31 @@
+{
+    "idleZones": [
+        {
+            "id": "idle_01",
+            "name": "后山草丛",
+            "unlockRequirement": 0,
+            "monsters": [
+                {"name": "灵兔", "hp": 30, "atk": 2, "exp": 5, "gold": 2}
+            ]
+        }
+    ],
+    "tower": {
+        "id": "infinite_tower",
+        "name": "镇妖塔",
+        "baseHp": 100,
+        "baseAtk": 10,
+        "growth": 1.15,
+        "rewardMultiplier": 1.2
+    },
+    "elites": [
+        {
+            "id": "elite_01",
+            "name": "【精英】啸月狼王",
+            "hp": 2000,
+            "atk": 150,
+            "exp": 500,
+            "gold": 1000,
+            "desc": "极度危险，凡人止步。"
+        }
+    ]
+}
