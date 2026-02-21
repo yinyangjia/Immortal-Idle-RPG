@@ -5,7 +5,15 @@
             "name": "后山草丛",
             "unlockRequirement": 0,
             "monsters": [
-                {"name": "灵兔", "hp": 30, "atk": 2, "exp": 5, "gold": 2}
+                {"name": "灵兔", "hp": 30, "atk": 2, "exp": 5, "gold": 2, "desc": "普通的小兔子。"}
+            ]
+        },
+        {
+            "id": "idle_02",
+            "name": "幽暗森林",
+            "unlockRequirement": 5,
+            "monsters": [
+                {"name": "嗜血狼", "hp": 500, "atk": 45, "exp": 150, "gold": 80, "desc": "成群结队的掠食者。"}
             ]
         }
     ],
