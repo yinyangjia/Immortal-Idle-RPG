@@ -90,4 +90,9 @@ window.switchMode = (mode) => {
     const btns = document.querySelectorAll('.tab-btn');
     btns.forEach(btn => btn.classList.remove('active'));
     // 注意：这里需要根据实际点击的按钮来操作，简单起见可交由 CSS 处理
+
+window.changeZone = (zoneId) => {
+engine.state.currentZoneId = zoneId;
+BattleSystem.currentMonster = null; // 切换区域即重置对手
+UISystem.log(`已前往挂机点：${zoneId}`);
 };
