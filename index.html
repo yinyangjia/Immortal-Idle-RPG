@@ -27,6 +27,22 @@
                 </div>
 
                 <div class="stat-row">攻击: <span id="p-atk">0</span></div>
+                <div id="artifact-container" class="panel-sub">
+                <h4>本命法宝</h4>
+                <div id="artifact-display" class="artifact-card">
+                    <div id="art-full-name" class="art-name">加载中...</div>
+                    <div class="art-details">
+                    等级: <span id="art-level">1</span>/10
+                <div class="mini-progress"><div id="art-level-bar" class="progress-bar"></div></div>
+                </div>
+                <div id="art-affixes" class="art-affixes">
+                </div>
+    </div>
+    <div class="art-actions">
+        <button id="art-up-btn" onclick="window.artLevelUp()">淬炼(升级)</button>
+        <button id="art-pro-btn" onclick="window.artPromote()" class="btn-special">突破(升品/阶)</button>
+    </div>
+</div>
                 <div class="stat-row">修为: <span id="p-exp">0</span> / <span id="p-next">0</span></div>
                 <div class="progress-container">
                     <div id="p-exp-bar" class="progress-bar" style="background: #27ae60; width: 0%;"></div>
