@@ -41,11 +41,15 @@
                     <button class="tab-btn" onclick="window.switchMode('elite')">精英挑战</button>
                 </div>
 
-                <div id="zone-display">
-                    <h3 id="current-zone-name">加载副本中...</h3>
-                    <p id="zone-info">进度: <span id="tower-floor">-</span></p>
-                </div>
-
+               <div id="zone-display">
+    <h3 id="current-zone-name">加载副本中...</h3>
+    <div id="idle-selector-container">
+        <label>挂机地点：</label>
+        <select id="zone-selector" onchange="window.changeZone(this.value)">
+            </select>
+    </div>
+    <p id="zone-info">进度: <span id="tower-floor">-</span></p>
+</div>
                 <hr>
 
                 <div id="monster-info">
