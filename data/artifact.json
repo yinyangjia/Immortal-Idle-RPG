@@ -1,0 +1,23 @@
+{
+    "qualities": [
+        {"id": "q1", "name": "普通", "color": "#ffffff", "multiplier": 1.0},
+        {"id": "q2", "name": "优秀", "color": "#2ecc71", "multiplier": 1.5},
+        {"id": "q3", "name": "杰出", "color": "#e67e22", "multiplier": 2.5},
+        {"id": "q4", "name": "完美", "color": "#e74c3c", "multiplier": 4.5}
+    ],
+    "tiers": [
+        {"id": "t1", "name": "凡器", "baseAtk": 10, "multiplier": 1.0, "slots": 0, "css": "tier-mortal"},
+        {"id": "t2", "name": "灵器", "baseAtk": 50, "multiplier": 2.5, "slots": 1, "css": "tier-spirit"},
+        {"id": "t3", "name": "法器", "baseAtk": 150, "multiplier": 6.0, "slots": 2, "css": "tier-magic"},
+        {"id": "t4", "name": "宝器", "baseAtk": 400, "multiplier": 15.0, "slots": 3, "css": "tier-treasure"},
+        {"id": "t5", "name": "灵宝", "baseAtk": 1000, "multiplier": 40.0, "slots": 4, "css": "tier-spirit-treasure"},
+        {"id": "t6", "name": "古宝", "baseAtk": 2500, "multiplier": 100.0, "slots": 5, "css": "tier-ancient"},
+        {"id": "t7", "name": "真宝", "baseAtk": 6000, "multiplier": 250.0, "slots": 6, "css": "tier-true"},
+        {"id": "t8", "name": "仙器", "baseAtk": 15000, "multiplier": 800.0, "slots": 7, "css": "tier-immortal"}
+    ],
+    "affixPool": [
+        {"type": "atk_pct", "name": "攻击提升", "min": 5, "max": 15, "unit": "%"},
+        {"type": "crit_rate", "name": "暴击几率", "min": 2, "max": 10, "unit": "%"},
+        {"type": "lifesteal", "name": "吸血", "min": 3, "max": 8, "unit": "%"}
+    ]
+}
